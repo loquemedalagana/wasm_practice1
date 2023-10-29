@@ -25,3 +25,11 @@ body {
     )
     rgb(var(--background-start-rgb));
 }
+
+.main-nav {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1em;
+  gap: 0.5em;
+}
