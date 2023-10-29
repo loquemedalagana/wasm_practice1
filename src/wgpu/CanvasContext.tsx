@@ -14,8 +14,8 @@ export interface ICanvasContext {
   adapter: GPUAdapter | null;
   device: GPUDevice | null;
   context?: GPUCanvasContext | Error | null;
-  // canvasFormat: GPUTextureFormat;
-  // encoder: GPUCommandEncoder;
+  canvasFormat: GPUTextureFormat | null;
+  encoder: GPUCommandEncoder | null;
   // pass: GPURenderPassEncoder;
 }
 
@@ -35,6 +35,10 @@ export const CanvasProvider: React.FC<React.PropsWithChildren<Props>> = ({
   const [context, setContext] = useState<
     GPUCanvasContext | undefined | null | Error
   >(null);
+  const [canvasFormat, setCanvasFormat] = useState<GPUTextureFormat | null>(
+    null,
+  );
+  const [encoder, setEncoder] = useState<GPUCommandEncoder | null>(null);
 
   const initAdapter = async () => {
     if (!navigator.gpu) {
@@ -50,9 +54,20 @@ export const CanvasProvider: React.FC<React.PropsWithChildren<Props>> = ({
     }
     const newDevice = await adapter.requestDevice();
     const newContext = canvas?.getContext('webgpu');
-    console.log(newDevice, canvas, newContext);
+    const newCanvasFormat = navigator.gpu.getPreferredCanvasFormat();
+    const newEncoder = newDevice.createCommandEncoder();
+
+    if (newContext) {
+      newContext.configure({
+        device: newDevice,
+        format: newCanvasFormat,
+      });
+    }
+
     setDevice(newDevice);
     setContext(newContext);
+    setCanvasFormat(newCanvasFormat);
+    setEncoder(newEncoder);
   }, [adapter, canvas]);
 
   useEffect(() => {
@@ -76,6 +91,8 @@ export const CanvasProvider: React.FC<React.PropsWithChildren<Props>> = ({
     device,
     canvas,
     context,
+    canvasFormat,
+    encoder,
   };
 
   return navigator ? (
@@ -89,3 +106,8 @@ export const CanvasProvider: React.FC<React.PropsWithChildren<Props>> = ({
 };
 
 export default CanvasProvider;
+
+export const useCanvasContext = () => {
+  const context = useContext(CanvasContext);
+  return context;
+};
