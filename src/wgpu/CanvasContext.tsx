@@ -38,12 +38,19 @@ export const CanvasProvider: React.FC<React.PropsWithChildren<Props>> = ({
       throw new Error('WebGPU not supported on this browser.');
     }
     const newAdapter = await navigator.gpu.requestAdapter();
-    if (!newAdapter) {
+    setAdapter(newAdapter);
+  };
+
+  const initDevice = async () => {
+    if (!adapter) {
       throw new Error('No appropriate GPUAdapter found.');
     }
-    setAdapter(newAdapter);
-    return adapter;
-  };
+    console.log(adapter);
+    const newDevice = await adapter.requestDevice();
+    const newContext = canvas?.getContext('webgpu');
+    console.log(newDevice);
+    setDevice(newDevice);
+  }
 
   useEffect(() => {
     if (navigator.gpu && !adapter) {
@@ -51,7 +58,7 @@ export const CanvasProvider: React.FC<React.PropsWithChildren<Props>> = ({
     }
 
     if (adapter) {
-      console.log(adapter);
+      initDevice();
     }
   }, [navigator.gpu, adapter]);
 
