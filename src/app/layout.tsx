@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { Inter } from 'next/font/google';
 import './globals.css';
 
@@ -29,9 +30,33 @@ export default function RootLayout({
       </head>
       <body className={inter.className}>
         <section>
-          <nav className="main-nav">Navigation will be here</nav>
+          <nav className="main-nav">
+            <h1>
+              <Link href="/">WGPU practice</Link>
+            </h1>
+            <ul>
+              <h2>2D</h2>
+              <li>Circle</li>
+              <li>Triangle</li>
+            </ul>
+            <ul>
+              <h2>3D</h2>
+              <li>Circle</li>
+              <li>Triangle</li>
+            </ul>
+          </nav>
         </section>
         {children}
+        <footer className="footer">
+          <div> Copyright by Victoria Kim</div>
+          {/*
+           <div>
+            <a href={`https://github.com/${process.env.REPOSITORY_NAME}`}>
+              Github
+            </a>
+          </div>
+          */}
+        </footer>
       </body>
     </html>
   );

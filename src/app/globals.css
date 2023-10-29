@@ -28,8 +28,30 @@ body {
 
 .main-nav {
   display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+  padding: 1em;
+  gap: 0.5em;
+}
+
+.footer {
+  display: flex;
   justify-content: center;
   align-items: center;
   padding: 1em;
   gap: 0.5em;
+}
+
+.canvas-wrapper {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.loading-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }

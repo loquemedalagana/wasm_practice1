@@ -14,8 +14,8 @@ export interface ICanvasContext {
   device: GPUDevice | null;
   context: GPUCanvasContext | null;
   canvasFormat: GPUTextureFormat | null;
-  encoder: GPUCommandEncoder | null;
-  pass: GPURenderPassEncoder | null;
+  commandEncoder: GPUCommandEncoder | null;
+  renderPassEncoder: GPURenderPassEncoder | null;
 }
 
 export const CanvasContext = createContext<ICanvasContext | null>(null);
@@ -31,8 +31,10 @@ export const CanvasProvider: React.FC<React.PropsWithChildren> = ({
   const [canvasFormat, setCanvasFormat] = useState<GPUTextureFormat | null>(
     null,
   );
-  const [encoder, setEncoder] = useState<GPUCommandEncoder | null>(null);
-  const [pass, setPass] = useState<GPURenderPassEncoder | null>(null);
+  const [commandEncoder, setCommandEncoder] =
+    useState<GPUCommandEncoder | null>(null);
+  const [renderPassEncoder, setRenderPassEncoder] =
+    useState<GPURenderPassEncoder | null>(null);
 
   const initAdapter = async () => {
     if (!navigator.gpu) {
@@ -61,13 +63,13 @@ export const CanvasProvider: React.FC<React.PropsWithChildren> = ({
 
     setDevice(newDevice);
     setCanvasFormat(newCanvasFormat);
-    setEncoder(newEncoder);
+    setCommandEncoder(newEncoder);
   }, [adapter, canvas]);
 
   useEffect(() => {
-    if (encoder && context && device) {
-      console.log(encoder);
-      const newPass = encoder.beginRenderPass({
+    if (commandEncoder && context && device) {
+      console.log(commandEncoder);
+      const newPass = commandEncoder.beginRenderPass({
         // @ts-ignore
         colorAttachments: [
           {
@@ -79,11 +81,11 @@ export const CanvasProvider: React.FC<React.PropsWithChildren> = ({
         ],
       });
       newPass.end();
-      setPass(newPass);
+      setRenderPassEncoder(newPass);
 
-      device.queue.submit([encoder.finish()]);
+      device.queue.submit([commandEncoder.finish()]);
     }
-  }, [encoder]);
+  }, [commandEncoder]);
 
   useEffect(() => {
     if (canvasRef.current && !canvas) {
@@ -107,17 +109,17 @@ export const CanvasProvider: React.FC<React.PropsWithChildren> = ({
     canvas,
     context,
     canvasFormat,
-    encoder,
-    pass,
+    commandEncoder,
+    renderPassEncoder,
   };
 
   return navigator ? (
-    <>
-      <canvas ref={canvasRef}></canvas>
+    <section className="canvas-wrapper">
       <CanvasContext.Provider value={value}>{children}</CanvasContext.Provider>
-    </>
+      <canvas ref={canvasRef}></canvas>
+    </section>
   ) : (
-    <>Loading...</>
+    <section className="loading-wrapper">Loading...</section>
   );
 };
 
