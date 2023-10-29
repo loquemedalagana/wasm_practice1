@@ -8,6 +8,8 @@ import {
   useCallback,
 } from 'react';
 
+import { convertColorIntoFloat } from '@/util/color';
+
 export interface ICanvasContext {
   canvas: HTMLCanvasElement | null;
   adapter: GPUAdapter | null;
@@ -75,7 +77,7 @@ export const CanvasProvider: React.FC<React.PropsWithChildren> = ({
           {
             view: context.getCurrentTexture().createView(),
             loadOp: 'clear',
-            clearValue: { r: 1, g: 0, b: 0, a: 1 }, // New line
+            clearValue: convertColorIntoFloat({ r: 174, g: 222, b: 252 }), // New line
             storeOp: 'store',
           },
         ],
