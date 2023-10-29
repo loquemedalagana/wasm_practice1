@@ -13,7 +13,7 @@ export interface ICanvasContext {
   canvas: HTMLCanvasElement | null;
   adapter: GPUAdapter | null;
   device: GPUDevice | null;
-  context: GPUCanvasContext | Error | null;
+  context?: GPUCanvasContext | Error | null;
   // canvasFormat: GPUTextureFormat;
   // encoder: GPUCommandEncoder;
   // pass: GPURenderPassEncoder;
@@ -28,10 +28,13 @@ interface Props {
 export const CanvasProvider: React.FC<React.PropsWithChildren<Props>> = ({
   children,
 }) => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const [adapter, setAdapter] = useState<GPUAdapter | null>(null);
   const [device, setDevice] = useState<GPUDevice | null>(null);
   const [canvas, setCanvas] = useState<HTMLCanvasElement | null>(null);
-  const [context, setContext] = useState<GPUCanvasContext | null | Error>(null);
+  const [context, setContext] = useState<
+    GPUCanvasContext | undefined | null | Error
+  >(null);
 
   const initAdapter = async () => {
     if (!navigator.gpu) {
@@ -41,16 +44,22 @@ export const CanvasProvider: React.FC<React.PropsWithChildren<Props>> = ({
     setAdapter(newAdapter);
   };
 
-  const initDevice = async () => {
+  const initDevice = useCallback(async () => {
     if (!adapter) {
       throw new Error('No appropriate GPUAdapter found.');
     }
-    console.log(adapter);
     const newDevice = await adapter.requestDevice();
     const newContext = canvas?.getContext('webgpu');
-    console.log(newDevice);
+    console.log(newDevice, canvas, newContext);
     setDevice(newDevice);
-  }
+    setContext(newContext);
+  }, [adapter, canvas]);
+
+  useEffect(() => {
+    if (canvasRef.current && !canvas) {
+      setCanvas(canvasRef.current);
+    }
+  }, [canvasRef.current]);
 
   useEffect(() => {
     if (navigator.gpu && !adapter) {
@@ -71,6 +80,7 @@ export const CanvasProvider: React.FC<React.PropsWithChildren<Props>> = ({
 
   return navigator ? (
     <>
+      <canvas ref={canvasRef}></canvas>
       <CanvasContext.Provider value={value}>{children}</CanvasContext.Provider>
     </>
   ) : (
