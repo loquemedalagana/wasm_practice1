@@ -5,7 +5,6 @@ import {
   useContext,
   useEffect,
   useRef,
-  MutableRefObject,
   useCallback,
 } from 'react';
 
@@ -13,32 +12,27 @@ export interface ICanvasContext {
   canvas: HTMLCanvasElement | null;
   adapter: GPUAdapter | null;
   device: GPUDevice | null;
-  context?: GPUCanvasContext | Error | null;
+  context: GPUCanvasContext | null;
   canvasFormat: GPUTextureFormat | null;
   encoder: GPUCommandEncoder | null;
-  // pass: GPURenderPassEncoder;
+  pass: GPURenderPassEncoder | null;
 }
 
 export const CanvasContext = createContext<ICanvasContext | null>(null);
 
-interface Props {
-  canvasRef?: MutableRefObject<HTMLCanvasElement>;
-}
-
-export const CanvasProvider: React.FC<React.PropsWithChildren<Props>> = ({
+export const CanvasProvider: React.FC<React.PropsWithChildren> = ({
   children,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [adapter, setAdapter] = useState<GPUAdapter | null>(null);
   const [device, setDevice] = useState<GPUDevice | null>(null);
   const [canvas, setCanvas] = useState<HTMLCanvasElement | null>(null);
-  const [context, setContext] = useState<
-    GPUCanvasContext | undefined | null | Error
-  >(null);
+  const [context, setContext] = useState<GPUCanvasContext | null>(null);
   const [canvasFormat, setCanvasFormat] = useState<GPUTextureFormat | null>(
     null,
   );
   const [encoder, setEncoder] = useState<GPUCommandEncoder | null>(null);
+  const [pass, setPass] = useState<GPURenderPassEncoder | null>(null);
 
   const initAdapter = async () => {
     if (!navigator.gpu) {
@@ -62,13 +56,34 @@ export const CanvasProvider: React.FC<React.PropsWithChildren<Props>> = ({
         device: newDevice,
         format: newCanvasFormat,
       });
+      setContext(newContext);
     }
 
     setDevice(newDevice);
-    setContext(newContext);
     setCanvasFormat(newCanvasFormat);
     setEncoder(newEncoder);
   }, [adapter, canvas]);
+
+  useEffect(() => {
+    if (encoder && context && device) {
+      console.log(encoder);
+      const newPass = encoder.beginRenderPass({
+        // @ts-ignore
+        colorAttachments: [
+          {
+            view: context.getCurrentTexture().createView(),
+            loadOp: 'clear',
+            clearValue: { r: 1, g: 0, b: 0, a: 1 }, // New line
+            storeOp: 'store',
+          },
+        ],
+      });
+      newPass.end();
+      setPass(newPass);
+
+      device.queue.submit([encoder.finish()]);
+    }
+  }, [encoder]);
 
   useEffect(() => {
     if (canvasRef.current && !canvas) {
@@ -93,6 +108,7 @@ export const CanvasProvider: React.FC<React.PropsWithChildren<Props>> = ({
     context,
     canvasFormat,
     encoder,
+    pass,
   };
 
   return navigator ? (
