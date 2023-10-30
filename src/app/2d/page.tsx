@@ -1,21 +1,11 @@
-import dynamic from 'next/dynamic';
-
-import LoadingSpinner from '@/components/LoadingSpinner/LoadingSpinner';
-
-const CanvasProvider = dynamic(() => import('@/wgpu/CanvasContext'), {
-  loading: () => (
-    <section className="wrapper loading-wrapper">
-      <LoadingSpinner />
-    </section>
-  ),
-});
+import SingleColor from '@/samples/2d/SingleColor/SingleColor';
+import { convertColorIntoFloat } from '@/util/math/color';
 
 export default function Home() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <CanvasProvider>
-        <h1>2d</h1>
-      </CanvasProvider>
-    </main>
+    <>
+      <h1>Please select 2d samples from sub navigation bar</h1>
+      <SingleColor backgroundColor={convertColorIntoFloat(252, 245, 237)} />
+    </>
   );
 }

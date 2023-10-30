@@ -1,37 +1,35 @@
 'use client';
 import { useEffect } from 'react';
 import { useCanvasContext } from '@/wgpu/CanvasContext';
-import { RGB, RGBA } from '@/util/math/color';
+import { convertColorIntoFloat } from '@/util/math/color';
 
-interface Props {
-  backgroundColor: RGB | RGBA;
-}
-
-const SingleColor: React.FC<Props> = ({ backgroundColor }) => {
+const _2DCircle = () => {
   const { commandEncoder, context, device, setRenderPassEncoder } =
     useCanvasContext();
 
   useEffect(() => {
     if (commandEncoder && context && device) {
-      const newPass = commandEncoder.beginRenderPass({
+      console.log(context, commandEncoder)
+      /*
+           const newPass = commandEncoder.beginRenderPass({
         // @ts-ignore
         colorAttachments: [
           {
             view: context.getCurrentTexture().createView(),
             loadOp: 'clear',
-            clearValue: backgroundColor, // New line
+            clearValue: convertColorIntoFloat(255, 223, 223), // New line
             storeOp: 'store',
           },
         ],
       });
       newPass.end();
-      setRenderPassEncoder(newPass);
-
-      device.queue.submit([commandEncoder.finish()]);
+      setRenderPassEncoder(newPass); 
+      * */
+      // device.queue.submit([commandEncoder.finish()]);
     }
   }, [commandEncoder]);
 
-  return <h2>Single Color</h2>;
+  return <h2>2D Circle will be here</h2>;
 };
 
-export default SingleColor;
+export default _2DCircle;
