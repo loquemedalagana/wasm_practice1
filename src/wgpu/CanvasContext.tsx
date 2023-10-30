@@ -82,7 +82,7 @@ export const CanvasProvider = forwardRef<HTMLCanvasElement, PropsWithChildren>(
             {
               view: context.getCurrentTexture().createView(),
               loadOp: 'clear',
-              clearValue: convertColorIntoFloat({ r: 174, g: 222, b: 252 }), // New line
+              clearValue: convertColorIntoFloat(100, 153, 233), // New line
               storeOp: 'store',
             },
           ],

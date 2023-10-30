@@ -8,11 +8,16 @@ export type RGBA = RGB & {
   a: number;
 };
 
-export const convertColorIntoFloat = (intValue: RGB | RGBA): RGBA => {
+export const convertColorIntoFloat = (
+  r: number,
+  g: number,
+  b: number,
+  a?: number,
+): RGBA => {
   return {
-    r: intValue.r / 255,
-    g: intValue.g / 255,
-    b: intValue.b / 255,
-    a: 1,
+    r: r / 255,
+    g: g / 255,
+    b: b / 255,
+    a: a === undefined ? 1 : a / 255,
   };
 };
