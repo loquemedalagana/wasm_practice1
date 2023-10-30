@@ -10,6 +10,8 @@ import {
   PropsWithChildren,
 } from 'react';
 
+import LoadingSpinner from '@/components/LoadingSpinner/LoadingSpinner';
+
 import { convertColorIntoFloat } from '@/util/math/color';
 import { useCombinedRefs } from '@/util/UI/useCombinedRef';
 
@@ -126,7 +128,9 @@ export const CanvasProvider = forwardRef<HTMLCanvasElement, PropsWithChildren>(
         <canvas ref={combinedRef} className="canvas"></canvas>
       </section>
     ) : (
-      <section className="wrapper loading-wrapper">Loading...</section>
+      <section className="wrapper loading-wrapper">
+        <LoadingSpinner />
+      </section>
     );
   },
 );
