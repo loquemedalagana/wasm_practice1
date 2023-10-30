@@ -23,9 +23,11 @@ export interface ICanvasContext {
   canvasFormat: GPUTextureFormat | null;
   commandEncoder: GPUCommandEncoder | null;
   renderPassEncoder: GPURenderPassEncoder | null;
+  setRenderPassEncoder: React.Dispatch<GPURenderPassEncoder | null>;
 }
 
-export const CanvasContext = createContext<ICanvasContext | null>(null);
+// @ts-ignore
+export const CanvasContext = createContext<ICanvasContext>({});
 
 export const CanvasProvider = forwardRef<HTMLCanvasElement, PropsWithChildren>(
   ({ children }, ref) => {
@@ -74,27 +76,6 @@ export const CanvasProvider = forwardRef<HTMLCanvasElement, PropsWithChildren>(
     }, [adapter, canvas]);
 
     useEffect(() => {
-      if (commandEncoder && context && device) {
-        console.log(commandEncoder);
-        const newPass = commandEncoder.beginRenderPass({
-          // @ts-ignore
-          colorAttachments: [
-            {
-              view: context.getCurrentTexture().createView(),
-              loadOp: 'clear',
-              clearValue: convertColorIntoFloat(100, 153, 233), // New line
-              storeOp: 'store',
-            },
-          ],
-        });
-        newPass.end();
-        setRenderPassEncoder(newPass);
-
-        device.queue.submit([commandEncoder.finish()]);
-      }
-    }, [commandEncoder]);
-
-    useEffect(() => {
       if (canvasRef.current && !canvas) {
         setCanvas(canvasRef.current);
       }
@@ -118,6 +99,7 @@ export const CanvasProvider = forwardRef<HTMLCanvasElement, PropsWithChildren>(
       canvasFormat,
       commandEncoder,
       renderPassEncoder,
+      setRenderPassEncoder,
     };
 
     return navigator ? (
