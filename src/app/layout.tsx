@@ -32,17 +32,17 @@ export default function RootLayout({
         <section>
           <nav className="main-nav">
             <h1>
-              <Link href="/">WGPU practice</Link>
+              <Link href="/" className="nav-item">WGPU practice</Link>
             </h1>
             <ul>
-              <h2>2D</h2>
-              <li>Circle</li>
-              <li>Triangle</li>
+              <h2>
+                <Link href="/2d" className="nav-item">2D</Link>
+              </h2>
             </ul>
             <ul>
-              <h2>3D</h2>
-              <li>Circle</li>
-              <li>Triangle</li>
+              <h2>
+                <Link href="/3d" className="nav-item">3D</Link>
+              </h2>
             </ul>
           </nav>
         </section>

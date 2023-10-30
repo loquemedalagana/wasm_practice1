@@ -67,3 +67,8 @@ body {
   width: 100%;
   aspect-ratio: 1;
 }
+
+.nav-item:hover {
+  cursor: pointer;
+  color: #6499E9;
+}
