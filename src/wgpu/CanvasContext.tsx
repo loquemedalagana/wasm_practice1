@@ -12,7 +12,6 @@ import {
 
 import LoadingSpinner from '@/components/LoadingSpinner/LoadingSpinner';
 
-import { convertColorIntoFloat } from '@/util/math/color';
 import { useCombinedRefs } from '@/util/UI/useCombinedRef';
 
 export interface ICanvasContext {
@@ -82,14 +81,14 @@ export const CanvasProvider = forwardRef<HTMLCanvasElement, PropsWithChildren>(
     }, [canvasRef.current]);
 
     useEffect(() => {
-      if (navigator.gpu && !adapter) {
+      if (navigator?.gpu && !adapter) {
         initAdapter();
       }
 
       if (adapter) {
         initDevice();
       }
-    }, [navigator.gpu, adapter]);
+    }, [adapter]);
 
     const value = {
       adapter,
@@ -102,7 +101,7 @@ export const CanvasProvider = forwardRef<HTMLCanvasElement, PropsWithChildren>(
       setRenderPassEncoder,
     };
 
-    return navigator ? (
+    return typeof window !== 'undefined' && navigator ? (
       <section className="wrapper canvas-wrapper">
         <CanvasContext.Provider value={value}>
           {children}
