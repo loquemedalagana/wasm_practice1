@@ -101,16 +101,18 @@ export const CanvasProvider = forwardRef<HTMLCanvasElement, PropsWithChildren>(
       setRenderPassEncoder,
     };
 
-    return typeof window !== 'undefined' && navigator ? (
+    return (
       <section className="wrapper canvas-wrapper">
-        <CanvasContext.Provider value={value}>
-          {children}
-        </CanvasContext.Provider>
+        {typeof window !== 'undefined' &&
+        typeof navigator !== 'undefined' &&
+        canvas ? (
+          <CanvasContext.Provider value={value}>
+            {children}
+          </CanvasContext.Provider>
+        ) : (
+          <LoadingSpinner />
+        )}
         <canvas ref={combinedRef} className="canvas"></canvas>
-      </section>
-    ) : (
-      <section className="wrapper loading-wrapper">
-        <LoadingSpinner />
       </section>
     );
   },

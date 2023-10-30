@@ -1,5 +1,15 @@
-import CanvasProvider from '@/wgpu/CanvasContext';
-import SingleColor from "@/samples/2d/SingleColor/SingleColor";
+import dynamic from 'next/dynamic';
+
+import LoadingSpinner from '@/components/LoadingSpinner/LoadingSpinner';
+import SingleColor from '@/samples/2d/SingleColor/SingleColor';
+
+const CanvasProvider = dynamic(() => import('@/wgpu/CanvasContext'), {
+  loading: () => (
+    <section className="wrapper loading-wrapper">
+      <LoadingSpinner />
+    </section>
+  ),
+});
 
 export default function Home() {
   return (
