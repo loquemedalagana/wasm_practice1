@@ -74,9 +74,18 @@ body {
 .canvas {
   width: 100%;
   aspect-ratio: 1;
+  max-width: 800px;
+}
+
+@media screen and (min-width: 1200px) {
+  .canvas {
+    width: 100%;
+    aspect-ratio: 1;
+    max-width: 1000px;
+  }
 }
 
 .nav-item:hover {
   cursor: pointer;
-  color: #6499E9;
+  color: #6499e9;
 }
