@@ -8,7 +8,7 @@ const _2DLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         <ul>
           {Object.keys(_2dPages).map((pageName) => {
             return (
-              <li>
+              <li key={`page-element-${pageName}`}>
                 <Link href={`/2d/${pageName}`} className="nav-item">
                   {pageName}
                 </Link>

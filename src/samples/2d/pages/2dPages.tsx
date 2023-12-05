@@ -3,7 +3,7 @@ import dynamic from 'next/dynamic';
 import LoadingSpinner from '@/components/LoadingSpinner/LoadingSpinner';
 
 const pages: PageComponentType = {
-  rectangle: dynamic(() => import('@/samples/2d/rectangle/2DRectangle'), {
+  triangle: dynamic(() => import('@/samples/2d/triangle/2DTriangle'), {
     loading: () => (
       <section className="wrapper loading-wrapper">
         <LoadingSpinner />
