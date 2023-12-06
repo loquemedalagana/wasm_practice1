@@ -14,6 +14,9 @@ import LoadingSpinner from '@/components/LoadingSpinner/LoadingSpinner';
 
 import { convertColorIntoFloat } from '@/util/math/color';
 
+// @ts-ignore
+import triangleVertexShader from '@/shaders/triangle.vert.wgsl';
+
 export interface ICanvasContext {
   canvas: HTMLCanvasElement | null;
 }
@@ -64,21 +67,7 @@ export const CanvasProvider: React.FC<PropsWithChildren & Props> = ({
         layout: 'auto',
         vertex: {
           module: device.createShaderModule({
-            code: `
-            @vertex
-              fn main(
-                @builtin(vertex_index) VertexIndex : u32
-              ) -> @builtin(position) vec4<f32> {
-                var pos = array<vec2<f32>, 3>(
-                  vec2(0.0, 0.5),
-                  vec2(-0.5, -0.5),
-                  vec2(0.5, -0.5)
-                );
-              
-                return vec4<f32>(pos[VertexIndex], 0.0, 1.0);
-              }
-
-            `,
+            code: triangleVertexShader,
           }),
           entryPoint: 'main',
         },
@@ -102,8 +91,6 @@ export const CanvasProvider: React.FC<PropsWithChildren & Props> = ({
           topology: 'triangle-list',
         },
       });
-
-      console.log(pipeline);
 
       const passEncoder = commandEncoder.beginRenderPass({
         // @ts-ignore
