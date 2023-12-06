@@ -1,12 +1,21 @@
 'use client';
-import { useEffect } from 'react';
-import { useCanvasContext } from '@/wgpu/CanvasContext';
-import { convertColorIntoVec4 } from '@/util/math/color';
 import CanvasInfo from '@/components/CanvasInfo';
+import dynamic from 'next/dynamic';
+import LoadingSpinner from '@/components/LoadingSpinner/LoadingSpinner';
 
+const CanvasProvider = dynamic(() => import('@/wgpu/CanvasContext'), {
+  loading: () => (
+    <section className="wrapper loading-wrapper">
+      <LoadingSpinner />
+    </section>
+  ),
+});
 const _2DTriangle = () => {
-
-  return <CanvasInfo />;
+  return (
+    <CanvasProvider vertexCount={3}>
+      <CanvasInfo />
+    </CanvasProvider>
+  );
 };
 
 export default _2DTriangle;
