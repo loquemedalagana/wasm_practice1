@@ -11,13 +11,14 @@
   "dependencies": {
     "next": "13.5.6",
     "react": "^18",
-    "react-dom": "^18"
+    "react-dom": "^18",
+    "wgpu-matrix": "^2.5.1"
   },
   "devDependencies": {
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
-    "@webgpu/types": "^0.1.38",
+    "@webgpu/types": "^0.1.40",
     "autoprefixer": "^10",
     "eslint": "^8",
     "eslint-config-next": "13.5.6",

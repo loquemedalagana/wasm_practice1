@@ -12,113 +12,78 @@ import {
 
 import LoadingSpinner from '@/components/LoadingSpinner/LoadingSpinner';
 
-import { useCombinedRefs } from '@/util/UI/useCombinedRef';
+import { convertColorIntoFloat } from '@/util/math/color';
 
 export interface ICanvasContext {
   canvas: HTMLCanvasElement | null;
-  adapter: GPUAdapter | null;
-  device: GPUDevice | null;
-  context: GPUCanvasContext | null;
-  canvasFormat: GPUTextureFormat | null;
-  commandEncoder: GPUCommandEncoder | null;
-  renderPassEncoder: GPURenderPassEncoder | null;
-  setRenderPassEncoder: React.Dispatch<GPURenderPassEncoder | null>;
 }
 
 // @ts-ignore
 export const CanvasContext = createContext<ICanvasContext>({});
 
-export const CanvasProvider = forwardRef<HTMLCanvasElement, PropsWithChildren>(
-  ({ children }, ref) => {
-    const canvasRef = useRef<HTMLCanvasElement>(null);
-    const combinedRef = useCombinedRefs<HTMLCanvasElement>(ref, canvasRef);
-    const [adapter, setAdapter] = useState<GPUAdapter | null>(null);
-    const [device, setDevice] = useState<GPUDevice | null>(null);
-    const [canvas, setCanvas] = useState<HTMLCanvasElement | null>(null);
-    const [context, setContext] = useState<GPUCanvasContext | null>(null);
-    const [canvasFormat, setCanvasFormat] = useState<GPUTextureFormat | null>(
-      null,
-    );
-    const [commandEncoder, setCommandEncoder] =
-      useState<GPUCommandEncoder | null>(null);
-    const [renderPassEncoder, setRenderPassEncoder] =
-      useState<GPURenderPassEncoder | null>(null);
-
-    const initAdapter = async () => {
-      if (!navigator.gpu) {
-        throw new Error('WebGPU not supported on this browser.');
-      }
-      const newAdapter = await navigator.gpu.requestAdapter();
-      setAdapter(newAdapter);
-    };
-
-    const initDevice = useCallback(async () => {
+export const CanvasProvider: React.FC<PropsWithChildren> = ({ children }) => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  useEffect(() => {
+    const init = async () => {
+      const adapter = await navigator.gpu.requestAdapter();
       if (!adapter) {
         throw new Error('No appropriate GPUAdapter found.');
       }
-      const newDevice = await adapter.requestDevice();
-      const newContext = canvas?.getContext('webgpu');
-      const newCanvasFormat = navigator.gpu.getPreferredCanvasFormat();
-      const newEncoder = newDevice.createCommandEncoder();
-
-      if (newContext) {
-        newContext.configure({
-          device: newDevice,
-          format: newCanvasFormat,
-        });
-        setContext(newContext);
+      if (!canvasRef.current) {
+        throw new Error('No appropriate canvas found.');
       }
 
-      setDevice(newDevice);
-      setCanvasFormat(newCanvasFormat);
-      setCommandEncoder(newEncoder);
-    }, [adapter, canvas]);
+      const device = await adapter.requestDevice();
+      const context = canvasRef.current.getContext('webgpu');
+      const canvasFormat = navigator.gpu.getPreferredCanvasFormat();
+      const commandEncoder = device.createCommandEncoder();
 
-    useEffect(() => {
-      if (canvasRef.current && !canvas) {
-        setCanvas(canvasRef.current);
-      }
-    }, [canvasRef.current]);
-
-    useEffect(() => {
-      if (navigator?.gpu && !adapter) {
-        initAdapter();
+      if (!context) {
+        throw new Error('No appropriate context found.');
       }
 
-      if (adapter) {
-        initDevice();
-      }
-    }, [adapter]);
+      context.configure({
+        device: device,
+        format: canvasFormat,
+      });
 
-    const value = {
-      adapter,
-      device,
-      canvas,
-      context,
-      canvasFormat,
-      commandEncoder,
-      renderPassEncoder,
-      setRenderPassEncoder,
+      const pass = commandEncoder.beginRenderPass({
+        // @ts-ignore
+        colorAttachments: [
+          {
+            view: context.getCurrentTexture().createView(),
+            loadOp: 'clear',
+            clearValue: convertColorIntoFloat(100, 153, 233), // New line
+            storeOp: 'store',
+          },
+        ],
+      });
+      pass.end();
+      const commandBuffer = commandEncoder.finish();
+      device.queue.submit([commandBuffer]);
+      console.log(pass);
     };
+    init();
+  }, [canvasRef.current]);
 
-    return (
-      <section className="wrapper canvas-wrapper">
-        {typeof window !== 'undefined' &&
+  const value = {
+    canvas: canvasRef.current,
+  };
+
+  return (
+    <section className="wrapper canvas-wrapper">
+      {typeof window !== 'undefined' &&
         typeof navigator !== 'undefined' &&
-        canvas ? (
+        canvasRef.current && (
           <CanvasContext.Provider value={value}>
             {children}
           </CanvasContext.Provider>
-        ) : (
-          <LoadingSpinner />
         )}
-        <canvas ref={combinedRef} className="canvas"></canvas>
-      </section>
-    );
-  },
-);
+      <canvas ref={canvasRef} className="canvas"></canvas>
+    </section>
+  );
+};
 
-CanvasProvider.displayName = 'CanvasProvider';
 export default CanvasProvider;
 
 export const useCanvasContext = () => {
