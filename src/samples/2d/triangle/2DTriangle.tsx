@@ -7,6 +7,7 @@ import LoadingSpinner from '@/components/LoadingSpinner/LoadingSpinner';
 import triangleVertexShader from '@/shaders/vertices/triangle.vert.wgsl';
 // @ts-ignore
 import simpleColorVertexShader from '@/shaders/fragments/simpleColor.frag.wgsl';
+import { convertColorIntoVec4 } from '@/util/math/color';
 
 const CanvasProvider = dynamic(() => import('@/wgpu/CanvasContext'), {
   loading: () => (
@@ -28,11 +29,12 @@ const _2DTriangle = () => {
 
   return (
     <CanvasProvider
-      vertexCount={3}
+      vertexCount={5}
       partialConfiguration={partialConfiguration}
       partialRenderPipelineDescriptor={partialDescriptor}
       vertexShader={triangleVertexShader}
       fragmentShader={simpleColorVertexShader}
+      backgroundColor={convertColorIntoVec4(249, 243, 204)}
     >
       <CanvasInfo />
     </CanvasProvider>
