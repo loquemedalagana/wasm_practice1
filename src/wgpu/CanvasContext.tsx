@@ -6,6 +6,7 @@ import {
   useRef,
   PropsWithChildren,
 } from 'react';
+import { Vec4 } from 'wgpu-matrix';
 
 export interface ICanvasContext {
   canvas: HTMLCanvasElement | null;
@@ -22,8 +23,16 @@ interface Props {
   vertexCount?: number;
   vertexShader: string;
   fragmentShader: string;
-  bufferDescriptor?: GPUBufferDescriptor;
+  partialBufferDescriptor?: Pick<
+    GPUBufferDescriptor,
+    'size' | 'mappedAtCreation'
+  >;
+  vertexArray?: ArrayLike<number> | Float32Array;
   textureDescriptor?: GPUTextureDescriptor;
+  instanceCount?: number | undefined;
+  firstVertex?: number | undefined;
+  firstInstance?: number | undefined;
+  backgroundColor?: Vec4;
 }
 
 export const CanvasProvider: React.FC<PropsWithChildren & Props> = ({
@@ -32,9 +41,15 @@ export const CanvasProvider: React.FC<PropsWithChildren & Props> = ({
   partialConfiguration,
   partialFragmentState,
   partialVertexState,
-  vertexCount,
   vertexShader,
   fragmentShader,
+  partialBufferDescriptor,
+  vertexCount,
+  instanceCount,
+  firstVertex,
+  firstInstance,
+  backgroundColor,
+  vertexArray = [],
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   useEffect(() => {
@@ -49,7 +64,6 @@ export const CanvasProvider: React.FC<PropsWithChildren & Props> = ({
 
       const device = await adapter.requestDevice();
       const context = canvasRef.current.getContext('webgpu');
-      const commandEncoder = device.createCommandEncoder();
 
       if (!context) {
         throw new Error('No appropriate context found.');
@@ -87,6 +101,8 @@ export const CanvasProvider: React.FC<PropsWithChildren & Props> = ({
         },
       });
 
+      const commandEncoder = device.createCommandEncoder();
+
       const passEncoder = commandEncoder.beginRenderPass({
         // @ts-ignore
         colorAttachments: [
@@ -94,13 +110,36 @@ export const CanvasProvider: React.FC<PropsWithChildren & Props> = ({
             view: context.getCurrentTexture().createView(),
             loadOp: 'clear',
             storeOp: 'store',
+            clearValue: backgroundColor || [0, 0, 0, 1],
           },
         ],
       });
 
+      const vertexBuffer = partialBufferDescriptor
+        ? device.createBuffer({
+            ...partialBufferDescriptor,
+            usage: GPUBufferUsage.VERTEX,
+          })
+        : undefined;
+
+      if (vertexBuffer) {
+        new Float32Array(vertexBuffer.getMappedRange()).set(vertexArray);
+        vertexBuffer.unmap();
+      }
+
       if (vertexCount !== undefined) {
         passEncoder.setPipeline(pipeline);
-        passEncoder.draw(vertexCount);
+
+        if (vertexBuffer) {
+          passEncoder.setVertexBuffer(0, vertexBuffer);
+        }
+
+        passEncoder.draw(
+          vertexCount,
+          instanceCount,
+          firstVertex,
+          firstInstance,
+        );
       }
       passEncoder.end();
       device.queue.submit([commandEncoder.finish()]);
