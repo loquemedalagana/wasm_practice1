@@ -15,18 +15,20 @@ export interface ICanvasContext {
 export const CanvasContext = createContext<ICanvasContext>({});
 
 interface Props {
-  partialDescriptor?: Partial<GPURenderPipelineDescriptor>;
+  partialRenderPipelineDescriptor?: Partial<GPURenderPipelineDescriptor>;
   partialConfiguration?: Partial<GPUCanvasConfiguration>;
   partialVertexState?: Partial<GPUVertexState>;
   partialFragmentState?: Partial<GPUFragmentState>;
   vertexCount?: number;
   vertexShader: string;
   fragmentShader: string;
+  bufferDescriptor?: GPUBufferDescriptor;
+  textureDescriptor?: GPUTextureDescriptor;
 }
 
 export const CanvasProvider: React.FC<PropsWithChildren & Props> = ({
   children,
-  partialDescriptor,
+  partialRenderPipelineDescriptor,
   partialConfiguration,
   partialFragmentState,
   partialVertexState,
@@ -62,7 +64,7 @@ export const CanvasProvider: React.FC<PropsWithChildren & Props> = ({
       });
 
       const pipeline = device.createRenderPipeline({
-        ...partialDescriptor,
+        ...partialRenderPipelineDescriptor,
         layout: 'auto',
         vertex: {
           ...partialVertexState,
