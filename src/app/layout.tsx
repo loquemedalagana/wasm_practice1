@@ -32,21 +32,29 @@ export default function RootLayout({
         <section>
           <nav className="main-nav">
             <h1>
-              <Link href="/" className="nav-item">WGPU practice</Link>
+              <Link href="/" className="nav-item">
+                WGPU practice
+              </Link>
             </h1>
             <ul>
               <h2>
-                <Link href="/2d" className="nav-item">2D</Link>
+                <Link href="/2d" className="nav-item">
+                  2D
+                </Link>
               </h2>
             </ul>
             <ul>
               <h2>
-                <Link href="/3d" className="nav-item">3D</Link>
+                <Link href="/3d" className="nav-item">
+                  3D
+                </Link>
               </h2>
             </ul>
           </nav>
         </section>
-        {children}
+        <main className="flex min-h-screen flex-col items-center justify-between">
+          {children}
+        </main>
         <footer className="footer">
           <div> Copyright by Victoria Kim</div>
           {/*

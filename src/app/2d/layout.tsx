@@ -24,9 +24,7 @@ const _2DLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           */}
         </ul>
       </nav>
-      <main className="flex min-h-screen flex-col items-center justify-between p-24">
-        {children}
-      </main>
+      <section className="flex flex-col items-center">{children}</section>
     </section>
   );
 };

@@ -89,3 +89,7 @@ body {
   cursor: pointer;
   color: #6499e9;
 }
+
+.page-box {
+  padding: 2rem;
+}
