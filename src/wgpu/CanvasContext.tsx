@@ -1,21 +1,11 @@
 'use client';
 import {
-  useState,
   createContext,
   useContext,
   useEffect,
   useRef,
-  useCallback,
-  forwardRef,
   PropsWithChildren,
 } from 'react';
-
-import LoadingSpinner from '@/components/LoadingSpinner/LoadingSpinner';
-
-import { convertColorIntoFloat } from '@/util/math/color';
-
-// @ts-ignore
-import triangleVertexShader from '@/shaders/triangle.vert.wgsl';
 
 export interface ICanvasContext {
   canvas: HTMLCanvasElement | null;
@@ -25,16 +15,24 @@ export interface ICanvasContext {
 export const CanvasContext = createContext<ICanvasContext>({});
 
 interface Props {
-  vertexCount?: number;
   partialDescriptor?: Partial<GPURenderPipelineDescriptor>;
   partialConfiguration?: Partial<GPUCanvasConfiguration>;
+  partialVertexState?: Partial<GPUVertexState>;
+  partialFragmentState?: Partial<GPUFragmentState>;
+  vertexCount?: number;
+  vertexShader: string;
+  fragmentShader: string;
 }
 
 export const CanvasProvider: React.FC<PropsWithChildren & Props> = ({
   children,
   partialDescriptor,
   partialConfiguration,
+  partialFragmentState,
+  partialVertexState,
   vertexCount,
+  vertexShader,
+  fragmentShader,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   useEffect(() => {
@@ -49,12 +47,13 @@ export const CanvasProvider: React.FC<PropsWithChildren & Props> = ({
 
       const device = await adapter.requestDevice();
       const context = canvasRef.current.getContext('webgpu');
-      const canvasFormat = navigator.gpu.getPreferredCanvasFormat();
       const commandEncoder = device.createCommandEncoder();
 
       if (!context) {
         throw new Error('No appropriate context found.');
       }
+
+      const canvasFormat = navigator.gpu.getPreferredCanvasFormat();
 
       context.configure({
         device: device,
@@ -66,19 +65,16 @@ export const CanvasProvider: React.FC<PropsWithChildren & Props> = ({
         ...partialDescriptor,
         layout: 'auto',
         vertex: {
+          ...partialVertexState,
           module: device.createShaderModule({
-            code: triangleVertexShader,
+            code: vertexShader,
           }),
           entryPoint: 'main',
         },
         fragment: {
+          ...partialFragmentState,
           module: device.createShaderModule({
-            code: `
-            @fragment
-            fn main() -> @location(0) vec4<f32> {
-              return vec4(0.0, 1.0, 0.0, 1.0);
-            }
-            `,
+            code: fragmentShader,
           }),
           entryPoint: 'main',
           targets: [
@@ -86,9 +82,6 @@ export const CanvasProvider: React.FC<PropsWithChildren & Props> = ({
               format: canvasFormat,
             },
           ],
-        },
-        primitive: {
-          topology: 'triangle-list',
         },
       });
 
