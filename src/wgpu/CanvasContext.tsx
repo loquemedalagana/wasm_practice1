@@ -15,25 +15,31 @@ export interface ICanvasContext {
 // @ts-ignore
 export const CanvasContext = createContext<ICanvasContext>({});
 
+export interface IBufferInfo {
+  array: Float32Array;
+  bufferDescriptor: Pick<GPUBufferDescriptor, 'size' | 'mappedAtCreation'>;
+}
+
 interface Props {
   partialRenderPipelineDescriptor?: Partial<GPURenderPipelineDescriptor>;
   partialConfiguration?: Partial<GPUCanvasConfiguration>;
+
   partialVertexState?: Partial<GPUVertexState>;
-  partialFragmentState?: Partial<GPUFragmentState>;
   vertexCount?: number;
   vertexShader: string;
+  partialFragmentState?: Partial<GPUFragmentState>;
   fragmentShader: string;
-  partialBufferDescriptor?: Pick<
-    GPUBufferDescriptor,
-    'size' | 'mappedAtCreation'
-  >;
-  vertexArray?: Float32Array;
+
   textureDescriptor?: GPUTextureDescriptor;
   instanceCount?: number | undefined;
   firstVertex?: number | undefined;
   firstInstance?: number | undefined;
+
   backgroundColor?: Vec4;
   vertexBufferLayout?: GPUVertexBufferLayout;
+
+  vertexBufferInfo?: IBufferInfo;
+  uniformBufferInfo?: IBufferInfo;
 }
 
 export const CanvasProvider: React.FC<PropsWithChildren & Props> = ({
@@ -44,14 +50,13 @@ export const CanvasProvider: React.FC<PropsWithChildren & Props> = ({
   partialVertexState,
   vertexShader,
   fragmentShader,
-  partialBufferDescriptor,
   vertexCount,
   instanceCount,
   firstVertex,
   firstInstance,
   backgroundColor,
-  vertexArray = new Float32Array([]),
   vertexBufferLayout,
+  vertexBufferInfo,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   useEffect(() => {
@@ -104,18 +109,20 @@ export const CanvasProvider: React.FC<PropsWithChildren & Props> = ({
         },
       });
 
-      const vertexBuffer = partialBufferDescriptor
+      const vertexBuffer = vertexBufferInfo
         ? device.createBuffer({
-            ...partialBufferDescriptor,
+            ...vertexBufferInfo.bufferDescriptor,
             usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
           })
         : undefined;
 
-      if (vertexBuffer) {
-        new Float32Array(vertexBuffer.getMappedRange()).set(vertexArray);
+      if (vertexBuffer && vertexBufferInfo) {
+        new Float32Array(vertexBuffer.getMappedRange()).set(
+          vertexBufferInfo.array,
+        );
         vertexBuffer.unmap();
 
-        device.queue.writeBuffer(vertexBuffer, 0, vertexArray);
+        device.queue.writeBuffer(vertexBuffer, 0, vertexBufferInfo.array);
       }
 
       const commandEncoder = device.createCommandEncoder();

@@ -31,7 +31,7 @@ const _2DRectangle = () => {
     },
   };
 
-  const bufferDescriptor: PartialGPUBufferDescriptor = {
+  const vertexBufferDescriptor: PartialGPUBufferDescriptor = {
     label: 'Rectangle',
     size: rectVertexArray.byteLength,
     mappedAtCreation: true,
@@ -54,9 +54,11 @@ const _2DRectangle = () => {
       partialRenderPipelineDescriptor={partialDescriptor}
       vertexShader={vertexShader}
       fragmentShader={simpleColorVertexShader}
-      partialBufferDescriptor={bufferDescriptor}
+      vertexBufferInfo={{
+        bufferDescriptor: vertexBufferDescriptor,
+        array: rectVertexArray,
+      }}
       backgroundColor={convertColorIntoVec4(208, 162, 247)}
-      vertexArray={rectVertexArray}
       vertexBufferLayout={vertexBufferLayout}
       vertexCount={rectVertexArray.length / 2}
     >
