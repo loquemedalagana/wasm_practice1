@@ -36,9 +36,10 @@ interface Props {
   firstInstance?: number | undefined;
 
   backgroundColor?: Vec4;
-  vertexBufferLayout?: GPUVertexBufferLayout;
 
+  // buffer information
   vertexBufferInfo?: IBufferInfo;
+  vertexBufferLayout?: GPUVertexBufferLayout;
   uniformBufferInfo?: IBufferInfo;
 }
 
@@ -57,6 +58,7 @@ export const CanvasProvider: React.FC<PropsWithChildren & Props> = ({
   backgroundColor,
   vertexBufferLayout,
   vertexBufferInfo,
+  uniformBufferInfo,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   useEffect(() => {
@@ -109,10 +111,34 @@ export const CanvasProvider: React.FC<PropsWithChildren & Props> = ({
         },
       });
 
+      const uniformBuffer = uniformBufferInfo
+        ? device.createBuffer({
+            ...uniformBufferInfo.bufferDescriptor,
+            usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+          })
+        : undefined;
+
       const vertexBuffer = vertexBufferInfo
         ? device.createBuffer({
             ...vertexBufferInfo.bufferDescriptor,
             usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
+          })
+        : undefined;
+
+      if (uniformBuffer && uniformBufferInfo) {
+        device.queue.writeBuffer(uniformBuffer, 0, uniformBufferInfo.array);
+      }
+
+      const bindGroup = uniformBuffer
+        ? device.createBindGroup({
+            label: 'Cell renderer bind group',
+            layout: pipeline.getBindGroupLayout(0),
+            entries: [
+              {
+                binding: 0,
+                resource: { buffer: uniformBuffer },
+              },
+            ],
           })
         : undefined;
 
@@ -142,6 +168,10 @@ export const CanvasProvider: React.FC<PropsWithChildren & Props> = ({
 
         if (vertexBuffer) {
           passEncoder.setVertexBuffer(0, vertexBuffer);
+        }
+
+        if (bindGroup) {
+          passEncoder.setBindGroup(0, bindGroup);
         }
 
         passEncoder.draw(

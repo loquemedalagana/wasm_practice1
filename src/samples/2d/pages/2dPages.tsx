@@ -24,6 +24,13 @@ const pages: PageComponentType = {
       </section>
     ),
   }),
+  grid: dynamic(() => import('@/samples/2d/grid/_2DGrid'), {
+    loading: () => (
+      <section className="wrapper loading-wrapper">
+        <LoadingSpinner />
+      </section>
+    ),
+  }),
 };
 
 export default pages;
