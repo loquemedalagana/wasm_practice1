@@ -1,6 +1,3 @@
-import dynamic from 'next/dynamic';
-
-import LoadingSpinner from '@/components/LoadingSpinner/LoadingSpinner';
 import pages from '@/samples/2d/pages/2dPages';
 
 function Page({ params }: { params: { slug: string } }) {

@@ -27,12 +27,13 @@ interface Props {
     GPUBufferDescriptor,
     'size' | 'mappedAtCreation'
   >;
-  vertexArray?: ArrayLike<number> | Float32Array;
+  vertexArray?: Float32Array;
   textureDescriptor?: GPUTextureDescriptor;
   instanceCount?: number | undefined;
   firstVertex?: number | undefined;
   firstInstance?: number | undefined;
   backgroundColor?: Vec4;
+  vertexBufferLayout?: GPUVertexBufferLayout;
 }
 
 export const CanvasProvider: React.FC<PropsWithChildren & Props> = ({
@@ -49,7 +50,8 @@ export const CanvasProvider: React.FC<PropsWithChildren & Props> = ({
   firstVertex,
   firstInstance,
   backgroundColor,
-  vertexArray = [],
+  vertexArray = new Float32Array([]),
+  vertexBufferLayout,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   useEffect(() => {
@@ -86,6 +88,7 @@ export const CanvasProvider: React.FC<PropsWithChildren & Props> = ({
             code: vertexShader,
           }),
           entryPoint: 'main',
+          buffers: vertexBufferLayout ? [vertexBufferLayout] : undefined,
         },
         fragment: {
           ...partialFragmentState,
@@ -101,10 +104,22 @@ export const CanvasProvider: React.FC<PropsWithChildren & Props> = ({
         },
       });
 
-      const commandEncoder = device.createCommandEncoder();
+      const vertexBuffer = partialBufferDescriptor
+        ? device.createBuffer({
+            ...partialBufferDescriptor,
+            usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
+          })
+        : undefined;
 
+      if (vertexBuffer) {
+        new Float32Array(vertexBuffer.getMappedRange()).set(vertexArray);
+        vertexBuffer.unmap();
+
+        device.queue.writeBuffer(vertexBuffer, 0, vertexArray);
+      }
+
+      const commandEncoder = device.createCommandEncoder();
       const passEncoder = commandEncoder.beginRenderPass({
-        // @ts-ignore
         colorAttachments: [
           {
             view: context.getCurrentTexture().createView(),
@@ -112,20 +127,8 @@ export const CanvasProvider: React.FC<PropsWithChildren & Props> = ({
             storeOp: 'store',
             clearValue: backgroundColor || [0, 0, 0, 1],
           },
-        ],
+        ] as Iterable<GPURenderPassColorAttachment | null>,
       });
-
-      const vertexBuffer = partialBufferDescriptor
-        ? device.createBuffer({
-            ...partialBufferDescriptor,
-            usage: GPUBufferUsage.VERTEX,
-          })
-        : undefined;
-
-      if (vertexBuffer) {
-        new Float32Array(vertexBuffer.getMappedRange()).set(vertexArray);
-        vertexBuffer.unmap();
-      }
 
       if (vertexCount !== undefined) {
         passEncoder.setPipeline(pipeline);

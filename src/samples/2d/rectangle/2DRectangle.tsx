@@ -4,10 +4,13 @@ import dynamic from 'next/dynamic';
 import LoadingSpinner from '@/components/LoadingSpinner/LoadingSpinner';
 
 // @ts-ignore
-import circleVertexShader from '@/shaders/vertices/circle.vert.wgsl';
+import vertexShader from '@/samples/2d/rectangle/vertex.wgsl';
 // @ts-ignore
 import simpleColorVertexShader from '@/shaders/fragments/simpleColor.frag.wgsl';
+import { convertColorIntoVec4 } from '@/util/math/color';
 import { PartialGPUBufferDescriptor } from '@/util/types/wgpu';
+
+import { rectVertexArray } from '@/mashes/2dRectangle';
 
 const CanvasProvider = dynamic(() => import('@/wgpu/CanvasContext'), {
   loading: () => (
@@ -16,48 +19,50 @@ const CanvasProvider = dynamic(() => import('@/wgpu/CanvasContext'), {
     </section>
   ),
 });
-const _2DCircle = () => {
+
+const _2DRectangle = () => {
   const partialConfiguration: Partial<GPUCanvasConfiguration> = {
     alphaMode: 'premultiplied',
   };
 
   const partialDescriptor: Partial<GPURenderPipelineDescriptor> = {
     primitive: {
-      topology: 'point-list',
+      topology: 'triangle-list',
     },
   };
 
-  // Create a buffer with circle vertices
-  const vertexCount = 360; // Number of vertices to approximate the circle
-  const vertices = new Float32Array(vertexCount * 2); // 2D position (x, y)
-
-  for (let i = 0; i < vertexCount; i++) {
-    const angle = (i / vertexCount) * Math.PI * 2;
-    const x = Math.cos(angle);
-    const y = Math.sin(angle);
-    vertices[i * 2] = x;
-    vertices[i * 2 + 1] = y;
-  }
-
   const bufferDescriptor: PartialGPUBufferDescriptor = {
-    label: 'Circle',
-    size: vertices.byteLength,
+    label: 'Rectangle',
+    size: rectVertexArray.byteLength,
     mappedAtCreation: true,
+  };
+
+  const vertexBufferLayout: GPUVertexBufferLayout = {
+    arrayStride: 8,
+    attributes: [
+      {
+        format: 'float32x2',
+        offset: 0,
+        shaderLocation: 0, // Position, see vertex shader
+      },
+    ] as Iterable<GPUVertexAttribute>,
   };
 
   return (
     <CanvasProvider
-      vertexCount={vertexCount * 2}
       partialConfiguration={partialConfiguration}
       partialRenderPipelineDescriptor={partialDescriptor}
-      vertexShader={circleVertexShader}
+      vertexShader={vertexShader}
       fragmentShader={simpleColorVertexShader}
       partialBufferDescriptor={bufferDescriptor}
-      vertexArray={vertices}
+      backgroundColor={convertColorIntoVec4(208, 162, 247)}
+      vertexArray={rectVertexArray}
+      vertexBufferLayout={vertexBufferLayout}
+      vertexCount={rectVertexArray.length / 2}
     >
       <CanvasInfo />
     </CanvasProvider>
   );
 };
 
-export default _2DCircle;
+export default _2DRectangle;
