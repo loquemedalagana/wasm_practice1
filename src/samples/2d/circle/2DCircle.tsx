@@ -7,6 +7,7 @@ import LoadingSpinner from '@/components/LoadingSpinner/LoadingSpinner';
 import circleVertexShader from '@/shaders/vertices/circle.vert.wgsl';
 // @ts-ignore
 import simpleColorVertexShader from '@/shaders/fragments/simpleColor.frag.wgsl';
+import { PartialGPUBufferDescriptor } from '@/util/types/wgpu';
 
 const CanvasProvider = dynamic(() => import('@/wgpu/CanvasContext'), {
   loading: () => (
@@ -38,17 +39,15 @@ const _2DCircle = () => {
     vertices[i * 2 + 1] = y;
   }
 
-  const bufferDescriptor: Pick<
-    GPUBufferDescriptor,
-    'size' | 'mappedAtCreation'
-  > = {
+  const bufferDescriptor: PartialGPUBufferDescriptor = {
+    label: 'Circle',
     size: vertices.byteLength,
     mappedAtCreation: true,
   };
 
   return (
     <CanvasProvider
-      vertexCount={vertexCount}
+      vertexCount={vertexCount * 2}
       partialConfiguration={partialConfiguration}
       partialRenderPipelineDescriptor={partialDescriptor}
       vertexShader={circleVertexShader}
