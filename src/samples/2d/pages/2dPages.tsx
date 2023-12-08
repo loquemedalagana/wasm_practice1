@@ -10,8 +10,7 @@ const pages: PageComponentType = {
       </section>
     ),
   }),
-
-  circle: dynamic(() => import('@/samples/2d/circle/2DCircle'), {
+  circle: dynamic(() => import('@/samples/2d/circle/Main'), {
     loading: () => (
       <section className="wrapper loading-wrapper">
         <LoadingSpinner />
