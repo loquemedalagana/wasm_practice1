@@ -15,24 +15,32 @@ export interface ICanvasContext {
 // @ts-ignore
 export const CanvasContext = createContext<ICanvasContext>({});
 
+export interface IBufferInfo {
+  array: Float32Array;
+  bufferDescriptor: Pick<GPUBufferDescriptor, 'size' | 'mappedAtCreation'>;
+}
+
 interface Props {
   partialRenderPipelineDescriptor?: Partial<GPURenderPipelineDescriptor>;
   partialConfiguration?: Partial<GPUCanvasConfiguration>;
+
   partialVertexState?: Partial<GPUVertexState>;
-  partialFragmentState?: Partial<GPUFragmentState>;
   vertexCount?: number;
   vertexShader: string;
+  partialFragmentState?: Partial<GPUFragmentState>;
   fragmentShader: string;
-  partialBufferDescriptor?: Pick<
-    GPUBufferDescriptor,
-    'size' | 'mappedAtCreation'
-  >;
-  vertexArray?: ArrayLike<number> | Float32Array;
+
   textureDescriptor?: GPUTextureDescriptor;
   instanceCount?: number | undefined;
   firstVertex?: number | undefined;
   firstInstance?: number | undefined;
+
   backgroundColor?: Vec4;
+
+  // buffer information
+  vertexBufferInfo?: IBufferInfo;
+  vertexBufferLayout?: GPUVertexBufferLayout;
+  uniformBufferInfo?: IBufferInfo;
 }
 
 export const CanvasProvider: React.FC<PropsWithChildren & Props> = ({
@@ -43,13 +51,14 @@ export const CanvasProvider: React.FC<PropsWithChildren & Props> = ({
   partialVertexState,
   vertexShader,
   fragmentShader,
-  partialBufferDescriptor,
   vertexCount,
   instanceCount,
   firstVertex,
   firstInstance,
   backgroundColor,
-  vertexArray = [],
+  vertexBufferLayout,
+  vertexBufferInfo,
+  uniformBufferInfo,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   useEffect(() => {
@@ -86,6 +95,7 @@ export const CanvasProvider: React.FC<PropsWithChildren & Props> = ({
             code: vertexShader,
           }),
           entryPoint: 'main',
+          buffers: vertexBufferLayout ? [vertexBufferLayout] : undefined,
         },
         fragment: {
           ...partialFragmentState,
@@ -101,10 +111,48 @@ export const CanvasProvider: React.FC<PropsWithChildren & Props> = ({
         },
       });
 
-      const commandEncoder = device.createCommandEncoder();
+      const uniformBuffer = uniformBufferInfo
+        ? device.createBuffer({
+            ...uniformBufferInfo.bufferDescriptor,
+            usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+          })
+        : undefined;
 
+      const vertexBuffer = vertexBufferInfo
+        ? device.createBuffer({
+            ...vertexBufferInfo.bufferDescriptor,
+            usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
+          })
+        : undefined;
+
+      if (uniformBuffer && uniformBufferInfo) {
+        device.queue.writeBuffer(uniformBuffer, 0, uniformBufferInfo.array);
+      }
+
+      const bindGroup = uniformBuffer
+        ? device.createBindGroup({
+            label: 'Cell renderer bind group',
+            layout: pipeline.getBindGroupLayout(0),
+            entries: [
+              {
+                binding: 0,
+                resource: { buffer: uniformBuffer },
+              },
+            ],
+          })
+        : undefined;
+
+      if (vertexBuffer && vertexBufferInfo) {
+        new Float32Array(vertexBuffer.getMappedRange()).set(
+          vertexBufferInfo.array,
+        );
+        vertexBuffer.unmap();
+
+        device.queue.writeBuffer(vertexBuffer, 0, vertexBufferInfo.array);
+      }
+
+      const commandEncoder = device.createCommandEncoder();
       const passEncoder = commandEncoder.beginRenderPass({
-        // @ts-ignore
         colorAttachments: [
           {
             view: context.getCurrentTexture().createView(),
@@ -112,26 +160,18 @@ export const CanvasProvider: React.FC<PropsWithChildren & Props> = ({
             storeOp: 'store',
             clearValue: backgroundColor || [0, 0, 0, 1],
           },
-        ],
+        ] as Iterable<GPURenderPassColorAttachment | null>,
       });
-
-      const vertexBuffer = partialBufferDescriptor
-        ? device.createBuffer({
-            ...partialBufferDescriptor,
-            usage: GPUBufferUsage.VERTEX,
-          })
-        : undefined;
-
-      if (vertexBuffer) {
-        new Float32Array(vertexBuffer.getMappedRange()).set(vertexArray);
-        vertexBuffer.unmap();
-      }
 
       if (vertexCount !== undefined) {
         passEncoder.setPipeline(pipeline);
 
         if (vertexBuffer) {
           passEncoder.setVertexBuffer(0, vertexBuffer);
+        }
+
+        if (bindGroup) {
+          passEncoder.setBindGroup(0, bindGroup);
         }
 
         passEncoder.draw(

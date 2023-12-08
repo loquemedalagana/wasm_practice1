@@ -17,6 +17,20 @@ const pages: PageComponentType = {
       </section>
     ),
   }),
+  rectangle: dynamic(() => import('@/samples/2d/rectangle/2DRectangle'), {
+    loading: () => (
+      <section className="wrapper loading-wrapper">
+        <LoadingSpinner />
+      </section>
+    ),
+  }),
+  grid: dynamic(() => import('@/samples/2d/grid/_2DGrid'), {
+    loading: () => (
+      <section className="wrapper loading-wrapper">
+        <LoadingSpinner />
+      </section>
+    ),
+  }),
 };
 
 export default pages;
