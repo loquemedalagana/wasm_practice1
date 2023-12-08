@@ -39,7 +39,7 @@ const _2DCircle = () => {
     vertices[i * 2 + 1] = y;
   }
 
-  const bufferDescriptor: PartialGPUBufferDescriptor = {
+  const vertexBufferDescriptor: PartialGPUBufferDescriptor = {
     label: 'Circle',
     size: vertices.byteLength,
     mappedAtCreation: true,
@@ -52,8 +52,10 @@ const _2DCircle = () => {
       partialRenderPipelineDescriptor={partialDescriptor}
       vertexShader={circleVertexShader}
       fragmentShader={simpleColorVertexShader}
-      partialBufferDescriptor={bufferDescriptor}
-      vertexArray={vertices}
+      vertexBufferInfo={{
+        bufferDescriptor: vertexBufferDescriptor,
+        array: vertices,
+      }}
     >
       <CanvasInfo />
     </CanvasProvider>

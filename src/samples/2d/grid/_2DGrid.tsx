@@ -4,7 +4,7 @@ import dynamic from 'next/dynamic';
 import LoadingSpinner from '@/components/LoadingSpinner/LoadingSpinner';
 
 // @ts-ignore
-import vertexShader from '@/samples/2d/rectangle/vertex.wgsl';
+import vertexShader from '@/samples/2d/grid/vertex.wgsl';
 // @ts-ignore
 import simpleColorVertexShader from '@/shaders/fragments/simpleColor.frag.wgsl';
 import { convertColorIntoVec4 } from '@/util/math/color';
@@ -19,6 +19,8 @@ const CanvasProvider = dynamic(() => import('@/wgpu/CanvasContext'), {
     </section>
   ),
 });
+
+const GRID_SIZE = 4;
 
 const _2DRectangle = () => {
   const partialConfiguration: Partial<GPUCanvasConfiguration> = {
@@ -48,6 +50,14 @@ const _2DRectangle = () => {
     ] as Iterable<GPUVertexAttribute>,
   };
 
+  // a uniform buffer that describes the grid
+  const uniformArray = new Float32Array([GRID_SIZE, GRID_SIZE]);
+
+  const partialUniformBufferDescriptor: PartialGPUBufferDescriptor = {
+    label: 'Grid Uniforms',
+    size: uniformArray.byteLength,
+  };
+
   return (
     <CanvasProvider
       partialConfiguration={partialConfiguration}
@@ -58,7 +68,11 @@ const _2DRectangle = () => {
         bufferDescriptor: vertexBufferDescriptor,
         array: rectVertexArray,
       }}
-      backgroundColor={convertColorIntoVec4(208, 162, 247)}
+      uniformBufferInfo={{
+        array: uniformArray,
+        bufferDescriptor: partialUniformBufferDescriptor,
+      }}
+      backgroundColor={convertColorIntoVec4(248, 189, 235)}
       vertexBufferLayout={vertexBufferLayout}
       vertexCount={rectVertexArray.length / 2}
     >
