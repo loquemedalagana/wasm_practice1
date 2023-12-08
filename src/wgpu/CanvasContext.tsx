@@ -9,7 +9,7 @@ import {
 import { Vec4 } from 'wgpu-matrix';
 
 export interface ICanvasContext {
-  canvas: HTMLCanvasElement | null;
+  canvasRef: React.RefObject<HTMLCanvasElement>;
 }
 
 // @ts-ignore
@@ -61,6 +61,8 @@ export const CanvasProvider: React.FC<PropsWithChildren & Props> = ({
   uniformBufferInfo,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const deviceRef = useRef<GPUDevice>(null);
+
   useEffect(() => {
     const init = async () => {
       const adapter = await navigator.gpu.requestAdapter();
@@ -188,7 +190,7 @@ export const CanvasProvider: React.FC<PropsWithChildren & Props> = ({
   }, [canvasRef.current]);
 
   const value = {
-    canvas: canvasRef.current,
+    canvasRef,
   };
 
   return (
