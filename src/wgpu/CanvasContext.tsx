@@ -7,9 +7,10 @@ import {
   PropsWithChildren,
 } from 'react';
 import { Vec4 } from 'wgpu-matrix';
+import initDevice from '@/wgpu/initDevice';
 
 export interface ICanvasContext {
-  canvas: HTMLCanvasElement | null;
+  canvasRef: React.RefObject<HTMLCanvasElement>;
 }
 
 // @ts-ignore
@@ -22,7 +23,7 @@ export interface IBufferInfo {
 
 interface Props {
   partialRenderPipelineDescriptor?: Partial<GPURenderPipelineDescriptor>;
-  partialConfiguration?: Partial<GPUCanvasConfiguration>;
+  canvasConfig: Partial<GPUCanvasConfiguration>;
 
   partialVertexState?: Partial<GPUVertexState>;
   vertexCount?: number;
@@ -46,7 +47,7 @@ interface Props {
 export const CanvasProvider: React.FC<PropsWithChildren & Props> = ({
   children,
   partialRenderPipelineDescriptor,
-  partialConfiguration,
+  canvasConfig,
   partialFragmentState,
   partialVertexState,
   vertexShader,
@@ -61,30 +62,15 @@ export const CanvasProvider: React.FC<PropsWithChildren & Props> = ({
   uniformBufferInfo,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+
   useEffect(() => {
     const init = async () => {
-      const adapter = await navigator.gpu.requestAdapter();
-      if (!adapter) {
-        throw new Error('No appropriate GPUAdapter found.');
-      }
-      if (!canvasRef.current) {
-        throw new Error('No appropriate canvas found.');
-      }
+      const { device, context, canvasFormat } = await initDevice(
+        canvasRef,
+        canvasConfig,
+      );
 
-      const device = await adapter.requestDevice();
-      const context = canvasRef.current.getContext('webgpu');
-
-      if (!context) {
-        throw new Error('No appropriate context found.');
-      }
-
-      const canvasFormat = navigator.gpu.getPreferredCanvasFormat();
-
-      context.configure({
-        device: device,
-        format: canvasFormat,
-        ...partialConfiguration,
-      });
+      const commandEncoder = device.createCommandEncoder();
 
       const pipeline = device.createRenderPipeline({
         ...partialRenderPipelineDescriptor,
@@ -147,11 +133,9 @@ export const CanvasProvider: React.FC<PropsWithChildren & Props> = ({
           vertexBufferInfo.array,
         );
         vertexBuffer.unmap();
-
         device.queue.writeBuffer(vertexBuffer, 0, vertexBufferInfo.array);
       }
 
-      const commandEncoder = device.createCommandEncoder();
       const passEncoder = commandEncoder.beginRenderPass({
         colorAttachments: [
           {
@@ -188,7 +172,7 @@ export const CanvasProvider: React.FC<PropsWithChildren & Props> = ({
   }, [canvasRef.current]);
 
   const value = {
-    canvas: canvasRef.current,
+    canvasRef,
   };
 
   return (
