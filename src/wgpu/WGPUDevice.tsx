@@ -20,7 +20,7 @@ const WGPUDevice: React.FC<PropsWithChildren> = ({ children }) => {
   }, []);
 
   return (
-    <div id="wgpu-device">
+    <div id="wgpu-device" className="wrapper canvas-wrapper">
       {device ? (
         <GPUDeviceContext.Provider value={device}>
           {children}
