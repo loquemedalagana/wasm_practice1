@@ -48,7 +48,7 @@ const _2DCircle = () => {
   return (
     <CanvasProvider
       vertexCount={vertexCount * 2}
-      partialConfiguration={partialConfiguration}
+      canvasConfig={partialConfiguration}
       partialRenderPipelineDescriptor={partialDescriptor}
       vertexShader={circleVertexShader}
       fragmentShader={simpleColorVertexShader}

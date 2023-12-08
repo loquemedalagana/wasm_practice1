@@ -60,7 +60,7 @@ const _2DRectangle = () => {
 
   return (
     <CanvasProvider
-      partialConfiguration={partialConfiguration}
+      canvasConfig={partialConfiguration}
       partialRenderPipelineDescriptor={partialDescriptor}
       vertexShader={vertexShader}
       fragmentShader={simpleColorVertexShader}

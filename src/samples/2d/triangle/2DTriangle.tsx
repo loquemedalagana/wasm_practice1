@@ -30,7 +30,7 @@ const _2DTriangle = () => {
   return (
     <CanvasProvider
       vertexCount={5}
-      partialConfiguration={partialConfiguration}
+      canvasConfig={partialConfiguration}
       partialRenderPipelineDescriptor={partialDescriptor}
       vertexShader={triangleVertexShader}
       fragmentShader={simpleColorVertexShader}
