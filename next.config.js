@@ -38,7 +38,7 @@ const nextConfig = {
     return config;
   },
   env: {
-    REPOSITORY_NAME: process.env.REPOSITORY_NAME,
+    REPOSITORY_NAME: 'wgpu_start',
   },
 }
 
