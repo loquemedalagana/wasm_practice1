@@ -1,9 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { Inter } from 'next/font/google';
 import './globals.css';
-
-const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: 'Basic Practice of webGL',
@@ -28,7 +25,7 @@ export default function RootLayout({
           content="width=device-width, initial-scale=1, shrink-to-fit=no"
         />
       </head>
-      <body className={inter.className}>
+      <body className="">
         <section>
           <nav className="main-nav">
             <h1>
