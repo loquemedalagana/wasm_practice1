@@ -5,7 +5,6 @@ export type PartialGPUBufferDescriptor = Pick<
 
 export type GPUDeviceInfo = {
   device: GPUDevice | null;
-  canvas: HTMLCanvasElement;
   context: GPUCanvasContext;
   textureFormat: GPUTextureFormat;
 };

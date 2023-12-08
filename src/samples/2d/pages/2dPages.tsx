@@ -18,7 +18,7 @@ const pages: PageComponentType = {
       </section>
     ),
   }),
-  rectangle: dynamic(() => import('@/samples/2d/rectangle/2DRectangle'), {
+  rectangle: dynamic(() => import('@/samples/2d/rectangle/Main'), {
     loading: () => (
       <section className="wrapper loading-wrapper">
         <LoadingSpinner />

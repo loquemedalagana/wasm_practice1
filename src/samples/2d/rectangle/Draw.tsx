@@ -2,8 +2,7 @@ import { useGPUDevice } from '@/wgpu/useWebGPUDevice';
 import { useWebGPUCanvas } from '@/wgpu/useWGPUCanvas';
 import { useTextureFormat } from '@/wgpu/useTextureFormat';
 import { useWebGPUContext } from '@/wgpu/useWGPUContextContext';
-
-import use2dTriangle from '@/samples/2d/triangle/use2dTriangle';
+import use2dRectangle from '@/samples/2d/rectangle/use2dRectangle';
 
 const Main: React.FC = () => {
   const device = useGPUDevice();
@@ -11,7 +10,7 @@ const Main: React.FC = () => {
   const context = useWebGPUContext();
   const textureFormat = useTextureFormat();
 
-  use2dTriangle({
+  use2dRectangle({
     device,
     context,
     textureFormat,
@@ -19,7 +18,7 @@ const Main: React.FC = () => {
 
   return (
     <h2>
-      hello triangle {canvas.clientWidth} X {canvas.clientHeight}
+      hello rectangle {canvas.clientWidth} X {canvas.clientHeight}
     </h2>
   );
 };
