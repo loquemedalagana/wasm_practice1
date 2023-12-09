@@ -63,7 +63,12 @@ const use2dGridState = (canvasInfo: GPUDeviceInfo) => {
 
     const cellStateBuffer = new WGPUBuffer(device, [
       {
-        label: 'Cell State',
+        label: 'Cell State A',
+        size: cellStateArray.byteLength,
+        usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
+      },
+      {
+        label: 'Cell State B',
         size: cellStateArray.byteLength,
         usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
       },
@@ -74,6 +79,12 @@ const use2dGridState = (canvasInfo: GPUDeviceInfo) => {
     }
 
     device.queue.writeBuffer(cellStateBuffer.buffers[0], 0, cellStateArray);
+
+    for (let i = 0; i < cellStateArray.length; i++) {
+      cellStateArray[i] = i % 2;
+    }
+
+    device.queue.writeBuffer(cellStateBuffer.buffers[1], 0, cellStateArray);
 
     // uniform buffer
     const uniformBuffer = new WGPUBuffer(device, [
@@ -97,7 +108,7 @@ const use2dGridState = (canvasInfo: GPUDeviceInfo) => {
     ]);
 
     const bindGroup = device.createBindGroup({
-      label: 'Cell renderer bind group',
+      label: 'Cell renderer bind group A',
       layout: pipeline.getBindGroupLayout(0),
       entries: [
         {
