@@ -4,13 +4,13 @@ import { GPUDeviceInfo } from '@/util/types/wgpu';
 // @ts-ignore
 import vertexShader from '@/samples/2d/grid/vertex.wgsl';
 // @ts-ignore
-import fragmentShader from '@/shaders/fragments/simpleColor.frag.wgsl';
+import fragmentShader from '@/samples/2d/grid/fragment.wgsl';
 import { convertColorIntoVec4 } from '@/util/math/color';
 import { PartialGPUBufferDescriptor } from '@/util/types/wgpu';
 
-import { rectVertexArray } from '@/mashes/2dRectangle';
+import { rectVertexArray } from '@/mashes/2dSquare';
 
-const GRID_SIZE = 4;
+const GRID_SIZE = 16;
 
 const use2dGrid = (canvasInfo: GPUDeviceInfo) => {
   const { device, context, textureFormat } = canvasInfo;
@@ -128,7 +128,7 @@ const use2dGrid = (canvasInfo: GPUDeviceInfo) => {
     passEncoder.setVertexBuffer(0, vertexBuffer);
     passEncoder.setBindGroup(0, bindGroup);
 
-    passEncoder.draw(rectVertexArray.length / 2);
+    passEncoder.draw(rectVertexArray.length / 2, GRID_SIZE * GRID_SIZE);
 
     passEncoder.end();
     device.queue.submit([commandEncoder.finish()]);
