@@ -1,4 +1,3 @@
-'use client';
 import pages from '@/samples/2d/pages/2dPages';
 
 function Page({ params }: { params: { slug: string } }) {
@@ -10,5 +9,11 @@ function Page({ params }: { params: { slug: string } }) {
     </>
   );
 }
+
+export const generateStaticParams = async () => {
+  return Object.keys(pages).map((p) => {
+    return { slug: p };
+  });
+};
 
 export default Page;
