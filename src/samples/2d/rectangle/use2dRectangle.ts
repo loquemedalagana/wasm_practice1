@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { GPUDeviceInfo, PartialGPUBufferDescriptor } from '@/util/types/wgpu';
+import { GPUDeviceInfo } from '@/util/types/wgpu';
 
 // @ts-ignore
 import vertexShader from '@/samples/2d/rectangle/vertex.wgsl';
@@ -8,27 +8,10 @@ import fragmentShader from '@/shaders/fragments/simpleColor.frag.wgsl';
 
 import { rectVertexArray } from '@/mashes/2dRectangle';
 import { convertColorIntoVec4 } from '@/util/math/color';
+import WGPUBuffer from '@/util/classes/WGPUBuffer';
 
 const use2dRectangle = (canvasInfo: GPUDeviceInfo) => {
   const { device, context, textureFormat } = canvasInfo;
-
-  const vertexBufferDescriptor: PartialGPUBufferDescriptor = {
-    label: 'Rectangle',
-    size: rectVertexArray.byteLength,
-    mappedAtCreation: true,
-  };
-
-  const vertexBufferInfo = {
-    bufferDescriptor: vertexBufferDescriptor,
-    array: rectVertexArray,
-  };
-
-  const partialRenderPipelineDescriptor: Partial<GPURenderPipelineDescriptor> =
-    {
-      primitive: {
-        topology: 'triangle-list',
-      },
-    };
 
   const vertexBufferLayout: GPUVertexBufferLayout = {
     arrayStride: 8,
@@ -48,7 +31,9 @@ const use2dRectangle = (canvasInfo: GPUDeviceInfo) => {
     const commandEncoder = device.createCommandEncoder();
 
     const pipeline = device.createRenderPipeline({
-      ...partialRenderPipelineDescriptor,
+      primitive: {
+        topology: 'triangle-list',
+      },
       layout: 'auto',
       vertex: {
         module: device.createShaderModule({
@@ -70,14 +55,20 @@ const use2dRectangle = (canvasInfo: GPUDeviceInfo) => {
       },
     });
 
-    const vertexBuffer = device.createBuffer({
-      ...vertexBufferInfo.bufferDescriptor,
-      usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
-    });
+    const vertexBuffer = new WGPUBuffer(device, [
+      {
+        usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
+        label: 'Rectangle',
+        size: rectVertexArray.byteLength,
+        mappedAtCreation: true,
+      },
+    ]);
 
-    new Float32Array(vertexBuffer.getMappedRange()).set(vertexBufferInfo.array);
-    vertexBuffer.unmap();
-    device.queue.writeBuffer(vertexBuffer, 0, vertexBufferInfo.array);
+    new Float32Array(vertexBuffer.buffers[0].getMappedRange()).set(
+      rectVertexArray,
+    );
+    vertexBuffer.buffers[0].unmap();
+    device.queue.writeBuffer(vertexBuffer.buffers[0], 0, rectVertexArray);
 
     const passEncoder = commandEncoder.beginRenderPass({
       colorAttachments: [
@@ -91,7 +82,7 @@ const use2dRectangle = (canvasInfo: GPUDeviceInfo) => {
     });
 
     passEncoder.setPipeline(pipeline);
-    passEncoder.setVertexBuffer(0, vertexBuffer);
+    passEncoder.setVertexBuffer(0, vertexBuffer.buffers[0]);
 
     passEncoder.draw(rectVertexArray.length / 2);
     passEncoder.end();
