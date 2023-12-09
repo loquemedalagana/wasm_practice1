@@ -31,6 +31,13 @@ const pages: PageComponentType = {
       </section>
     ),
   }),
+  'grid-state': dynamic(() => import('@/samples/2d/grid_state/Main'), {
+    loading: () => (
+      <section className="wrapper loading-wrapper">
+        <LoadingSpinner />
+      </section>
+    ),
+  }),
 };
 
 export default pages;

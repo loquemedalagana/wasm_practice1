@@ -1,30 +1,20 @@
 import { useEffect } from 'react';
-import { GPUDeviceInfo, PartialGPUBufferDescriptor } from '@/util/types/wgpu';
+import { GPUDeviceInfo } from '@/util/types/wgpu';
 
 import { create2dDotCircleMesh, VERTEX_COUNT } from '@/mashes/2dDotCircle';
-import { rectVertexArray } from '@/mashes/2dRectangle';
+import { rectVertexArray } from '@/mashes/2dSquare';
 
 // @ts-ignore
 import vertexShader from '@/shaders/vertices/circle.vert.wgsl';
 // @ts-ignore
 import fragmentShader from '@/shaders/fragments/simpleColor.frag.wgsl';
 import { convertColorIntoVec4 } from '@/util/math/color';
+import WGPUBuffer from '@/util/classes/WGPUBuffer';
 
 const use2dDotCircle = (canvasInfo: GPUDeviceInfo) => {
   const { device, context, textureFormat } = canvasInfo;
 
   const { vertices } = create2dDotCircleMesh(VERTEX_COUNT);
-
-  const vertexBufferDescriptor: PartialGPUBufferDescriptor = {
-    label: 'Circle',
-    size: vertices.byteLength,
-    mappedAtCreation: true,
-  };
-
-  const vertexBufferInfo = {
-    bufferDescriptor: vertexBufferDescriptor,
-    array: rectVertexArray,
-  };
 
   useEffect(() => {
     if (!device) {
@@ -33,14 +23,20 @@ const use2dDotCircle = (canvasInfo: GPUDeviceInfo) => {
 
     const commandEncoder = device.createCommandEncoder();
 
-    const vertexBuffer = device.createBuffer({
-      ...vertexBufferInfo.bufferDescriptor,
-      usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
-    });
+    const vertexBuffer = new WGPUBuffer(device, [
+      {
+        usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
+        label: 'Circle',
+        size: vertices.byteLength,
+        mappedAtCreation: true,
+      },
+    ]);
 
-    new Float32Array(vertexBuffer.getMappedRange()).set(vertexBufferInfo.array);
-    vertexBuffer.unmap();
-    device.queue.writeBuffer(vertexBuffer, 0, vertexBufferInfo.array);
+    new Float32Array(vertexBuffer.buffers[0].getMappedRange()).set(
+      rectVertexArray,
+    );
+    vertexBuffer.buffers[0].unmap();
+    device.queue.writeBuffer(vertexBuffer.buffers[0], 0, rectVertexArray);
 
     const passEncoder = commandEncoder.beginRenderPass({
       colorAttachments: [
@@ -75,7 +71,7 @@ const use2dDotCircle = (canvasInfo: GPUDeviceInfo) => {
     });
 
     passEncoder.setPipeline(pipeline);
-    passEncoder.setVertexBuffer(0, vertexBuffer);
+    passEncoder.setVertexBuffer(0, vertexBuffer.buffers[0]);
 
     passEncoder.draw(VERTEX_COUNT * 2);
     passEncoder.end();

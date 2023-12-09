@@ -2,19 +2,22 @@ import { useEffect } from 'react';
 import { GPUDeviceInfo } from '@/util/types/wgpu';
 
 // @ts-ignore
-import vertexShader from '@/samples/2d/grid/vertex.wgsl';
+import vertexShader from '@/samples/2d/grid_state/vertex.wgsl';
 // @ts-ignore
-import fragmentShader from '@/samples/2d/grid/fragment.wgsl';
-
-import WGPUBuffer from '@/util/classes/WGPUBuffer';
+import fragmentShader from '@/samples/2d/grid_state/fragment.wgsl';
 import { convertColorIntoVec4 } from '@/util/math/color';
 
 import { rectVertexArray } from '@/mashes/2dSquare';
+import WGPUBuffer from '@/util/classes/WGPUBuffer';
 
-const GRID_SIZE = 16;
+const GRID_SIZE = 32;
 
-const use2dGrid = (canvasInfo: GPUDeviceInfo) => {
+const use2dGridState = (canvasInfo: GPUDeviceInfo) => {
   const { device, context, textureFormat } = canvasInfo;
+
+  const cellStateArray = new Uint32Array(GRID_SIZE * GRID_SIZE);
+  // a uniform buffer that describes the grid
+  const uniformArray = new Float32Array([GRID_SIZE, GRID_SIZE]);
 
   const vertexBufferLayout: GPUVertexBufferLayout = {
     arrayStride: 8,
@@ -26,9 +29,6 @@ const use2dGrid = (canvasInfo: GPUDeviceInfo) => {
       },
     ] as Iterable<GPUVertexAttribute>,
   };
-
-  // a uniform buffer that describes the grid
-  const uniformArray = new Float32Array([GRID_SIZE, GRID_SIZE]);
 
   useEffect(() => {
     if (!device) {
@@ -61,16 +61,43 @@ const use2dGrid = (canvasInfo: GPUDeviceInfo) => {
       },
     });
 
+    const cellStateBuffer = new WGPUBuffer(device, [
+      {
+        label: 'Cell State A',
+        size: cellStateArray.byteLength,
+        usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
+      },
+      {
+        label: 'Cell State B',
+        size: cellStateArray.byteLength,
+        usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
+      },
+    ]);
+
+    for (let i = 0; i < cellStateArray.length; i += 3) {
+      cellStateArray[i] = 1;
+    }
+
+    device.queue.writeBuffer(cellStateBuffer.buffers[0], 0, cellStateArray);
+
+    for (let i = 0; i < cellStateArray.length; i++) {
+      cellStateArray[i] = i % 2;
+    }
+
+    device.queue.writeBuffer(cellStateBuffer.buffers[1], 0, cellStateArray);
+
+    // uniform buffer
     const uniformBuffer = new WGPUBuffer(device, [
       {
-        label: 'Grid Uniforms',
-        size: uniformArray.byteLength,
+        label: 'Uniform Buffer',
         usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+        size: uniformArray.byteLength,
       },
     ]);
 
     device.queue.writeBuffer(uniformBuffer.buffers[0], 0, uniformArray);
 
+    // vertex buffer
     const vertexBuffer = new WGPUBuffer(device, [
       {
         label: 'Rectangle',
@@ -81,12 +108,16 @@ const use2dGrid = (canvasInfo: GPUDeviceInfo) => {
     ]);
 
     const bindGroup = device.createBindGroup({
-      label: 'Cell renderer bind group',
+      label: 'Cell renderer bind group A',
       layout: pipeline.getBindGroupLayout(0),
       entries: [
         {
           binding: 0,
           resource: { buffer: uniformBuffer.buffers[0] },
+        },
+        {
+          binding: 1,
+          resource: { buffer: cellStateBuffer.buffers[0] },
         },
       ],
     });
@@ -103,7 +134,7 @@ const use2dGrid = (canvasInfo: GPUDeviceInfo) => {
           view: context.getCurrentTexture().createView(),
           loadOp: 'clear',
           storeOp: 'store',
-          clearValue: convertColorIntoVec4(248, 189, 235),
+          clearValue: convertColorIntoVec4(182, 187, 196),
         },
       ] as Iterable<GPURenderPassColorAttachment | null>,
     });
@@ -119,4 +150,4 @@ const use2dGrid = (canvasInfo: GPUDeviceInfo) => {
   }, []);
 };
 
-export default use2dGrid;
+export default use2dGridState;
