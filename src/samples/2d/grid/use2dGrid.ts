@@ -10,7 +10,7 @@ import { PartialGPUBufferDescriptor } from '@/util/types/wgpu';
 
 import { rectVertexArray } from '@/mashes/2dSquare';
 
-const GRID_SIZE = 4;
+const GRID_SIZE = 16;
 
 const use2dGrid = (canvasInfo: GPUDeviceInfo) => {
   const { device, context, textureFormat } = canvasInfo;
