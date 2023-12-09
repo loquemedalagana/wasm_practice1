@@ -1,3 +1,4 @@
+'use client';
 import pages from '@/samples/2d/pages/2dPages';
 
 function Page({ params }: { params: { slug: string } }) {
