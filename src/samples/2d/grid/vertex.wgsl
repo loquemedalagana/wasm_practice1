@@ -6,7 +6,7 @@ fn main(@location(0) pos: vec2f,
   @builtin(position) vec4f {
 
   let i = f32(instance); // save the instance_index as a float
-  let cell = vec2f(i, i); // Cell(i,i) in the image above
+  let cell = vec2f(i % grid.x, floor(i / grid.x)); // Cell(i,i) in the image above
   let cellOffset = cell / grid * 2; // Compute the offset to cell
   let gridPos = (pos + 1) / grid - 1 + cellOffset; // Add it here!
 
