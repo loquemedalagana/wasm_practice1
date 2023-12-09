@@ -19,13 +19,6 @@ const use2dGridState = (canvasInfo: GPUDeviceInfo) => {
   // a uniform buffer that describes the grid
   const uniformArray = new Float32Array([GRID_SIZE, GRID_SIZE]);
 
-  const partialRenderPipelineDescriptor: Partial<GPURenderPipelineDescriptor> =
-    {
-      primitive: {
-        topology: 'triangle-list',
-      },
-    };
-
   const vertexBufferLayout: GPUVertexBufferLayout = {
     arrayStride: 8,
     attributes: [
@@ -44,7 +37,9 @@ const use2dGridState = (canvasInfo: GPUDeviceInfo) => {
     const commandEncoder = device.createCommandEncoder();
 
     const pipeline = device.createRenderPipeline({
-      ...partialRenderPipelineDescriptor,
+      primitive: {
+        topology: 'triangle-list',
+      },
       layout: 'auto',
       vertex: {
         module: device.createShaderModule({
@@ -66,32 +61,40 @@ const use2dGridState = (canvasInfo: GPUDeviceInfo) => {
       },
     });
 
-    const cellStateBuffer = new WGPUBuffer(device, {
-      label: 'Cell State',
-      size: cellStateArray.byteLength,
-      usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
-    });
+    const cellStateBuffer = new WGPUBuffer(device, [
+      {
+        label: 'Cell State',
+        size: cellStateArray.byteLength,
+        usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
+      },
+    ]);
 
     for (let i = 0; i < cellStateArray.length; i += 3) {
       cellStateArray[i] = 1;
     }
 
-    device.queue.writeBuffer(cellStateBuffer.buffer, 0, cellStateArray);
+    device.queue.writeBuffer(cellStateBuffer.buffers[0], 0, cellStateArray);
 
-    const uniformBuffer = new WGPUBuffer(device, {
-      label: 'Uniform Buffer',
-      usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-      size: uniformArray.byteLength,
-    });
+    // uniform buffer
+    const uniformBuffer = new WGPUBuffer(device, [
+      {
+        label: 'Uniform Buffer',
+        usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+        size: uniformArray.byteLength,
+      },
+    ]);
 
-    device.queue.writeBuffer(uniformBuffer.buffer, 0, uniformArray);
+    device.queue.writeBuffer(uniformBuffer.buffers[0], 0, uniformArray);
 
-    const vertexBuffer = new WGPUBuffer(device, {
-      label: 'Rectangle',
-      size: rectVertexArray.byteLength,
-      mappedAtCreation: true,
-      usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
-    });
+    // vertex buffer
+    const vertexBuffer = new WGPUBuffer(device, [
+      {
+        label: 'Rectangle',
+        size: rectVertexArray.byteLength,
+        mappedAtCreation: true,
+        usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
+      },
+    ]);
 
     const bindGroup = device.createBindGroup({
       label: 'Cell renderer bind group',
@@ -99,18 +102,20 @@ const use2dGridState = (canvasInfo: GPUDeviceInfo) => {
       entries: [
         {
           binding: 0,
-          resource: { buffer: uniformBuffer.buffer },
+          resource: { buffer: uniformBuffer.buffers[0] },
         },
         {
           binding: 1,
-          resource: { buffer: cellStateBuffer.buffer },
+          resource: { buffer: cellStateBuffer.buffers[0] },
         },
       ],
     });
 
-    new Float32Array(vertexBuffer.buffer.getMappedRange()).set(rectVertexArray);
-    vertexBuffer.buffer.unmap();
-    device.queue.writeBuffer(vertexBuffer.buffer, 0, rectVertexArray);
+    new Float32Array(vertexBuffer.buffers[0].getMappedRange()).set(
+      rectVertexArray,
+    );
+    vertexBuffer.buffers[0].unmap();
+    device.queue.writeBuffer(vertexBuffer.buffers[0], 0, rectVertexArray);
 
     const passEncoder = commandEncoder.beginRenderPass({
       colorAttachments: [
@@ -124,7 +129,7 @@ const use2dGridState = (canvasInfo: GPUDeviceInfo) => {
     });
 
     passEncoder.setPipeline(pipeline);
-    passEncoder.setVertexBuffer(0, vertexBuffer.buffer);
+    passEncoder.setVertexBuffer(0, vertexBuffer.buffers[0]);
     passEncoder.setBindGroup(0, bindGroup);
 
     passEncoder.draw(rectVertexArray.length / 2, GRID_SIZE * GRID_SIZE);

@@ -1,9 +1,10 @@
 class WGPUBuffer {
-  buffer: GPUBuffer;
-  constructor(device: GPUDevice, bufferDescriptor: GPUBufferDescriptor) {
-    this.buffer = device.createBuffer(bufferDescriptor);
+  buffers: GPUBuffer[];
+  constructor(device: GPUDevice, bufferDescriptors: GPUBufferDescriptor[]) {
+    this.buffers = bufferDescriptors.map((bufferDescriptor) =>
+      device.createBuffer(bufferDescriptor),
+    );
   }
-
 }
 
 export default WGPUBuffer;
