@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { ChangeEventHandler, useEffect, useState } from 'react';
 import { GPUDeviceInfo } from '@/util/types/wgpu';
 
 // @ts-ignore
@@ -10,11 +10,18 @@ import WGPUBuffer from '@/util/classes/WGPUBuffer';
 import { convertColorIntoVec4 } from '@/util/math/color';
 
 import { rectVertexArray } from '@/mashes/2dSquare';
-
-const GRID_SIZE = 16;
+export const MIN__GRID_SIZE = 4;
+export const MAX__GRID_SIZE = 64;
 
 const use2dGrid = (canvasInfo: GPUDeviceInfo) => {
   const { device, context, textureFormat } = canvasInfo;
+  const [gridCount, setGridCount] = useState(16);
+
+  const handleGridCountInput: ChangeEventHandler<HTMLInputElement> = (e) => {
+    const newValue = parseInt(e.target.value);
+    const mod = newValue % 4;
+    setGridCount(newValue - mod);
+  };
 
   const vertexBufferLayout: GPUVertexBufferLayout = {
     arrayStride: 8,
@@ -28,7 +35,6 @@ const use2dGrid = (canvasInfo: GPUDeviceInfo) => {
   };
 
   // a uniform buffer that describes the grid
-  const uniformArray = new Float32Array([GRID_SIZE, GRID_SIZE]);
 
   useEffect(() => {
     if (!device) {
@@ -60,6 +66,8 @@ const use2dGrid = (canvasInfo: GPUDeviceInfo) => {
         ],
       },
     });
+
+    const uniformArray = new Float32Array([gridCount, gridCount]);
 
     const uniformBuffer = new WGPUBuffer(device, [
       {
@@ -112,11 +120,16 @@ const use2dGrid = (canvasInfo: GPUDeviceInfo) => {
     passEncoder.setVertexBuffer(0, vertexBuffer.buffers[0]);
     passEncoder.setBindGroup(0, bindGroup);
 
-    passEncoder.draw(rectVertexArray.length / 2, GRID_SIZE * GRID_SIZE);
+    passEncoder.draw(rectVertexArray.length / 2, gridCount * gridCount);
 
     passEncoder.end();
     device.queue.submit([commandEncoder.finish()]);
-  }, []);
+  }, [gridCount]);
+
+  return {
+    gridCount,
+    handleGridCountInput,
+  };
 };
 
 export default use2dGrid;
