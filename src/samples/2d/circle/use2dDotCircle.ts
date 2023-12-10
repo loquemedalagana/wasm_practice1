@@ -21,19 +21,19 @@ const use2dDotCircle = (canvasInfo: GPUDeviceInfo) => {
       return;
     }
 
-    const vertexBuffer = new WGPUBuffer(device, [
-      {
-        usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
-        label: 'Circle',
-        size: vertices.byteLength,
-        mappedAtCreation: true,
-      },
-    ]);
-
-    new Float32Array(vertexBuffer.buffers[0].getMappedRange()).set(
-      rectVertexArray,
+    const vertexBuffer = new WGPUBuffer(
+      device,
+      [
+        {
+          usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
+          label: 'Circle',
+          size: vertices.byteLength,
+          mappedAtCreation: true,
+          data: vertices,
+        },
+      ],
     );
-    vertexBuffer.buffers[0].unmap();
+
     device.queue.writeBuffer(vertexBuffer.buffers[0], 0, rectVertexArray);
 
     const pipeline = device.createRenderPipeline({

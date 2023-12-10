@@ -100,6 +100,7 @@ const use2dGridState = (canvasInfo: GPUDeviceInfo) => {
         size: rectVertexArray.byteLength,
         mappedAtCreation: true,
         usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
+        data: rectVertexArray,
       },
     ]);
 
@@ -118,10 +119,6 @@ const use2dGridState = (canvasInfo: GPUDeviceInfo) => {
       ],
     });
 
-    new Float32Array(vertexBuffer.buffers[0].getMappedRange()).set(
-      rectVertexArray,
-    );
-    vertexBuffer.buffers[0].unmap();
     device.queue.writeBuffer(vertexBuffer.buffers[0], 0, rectVertexArray);
 
     const commandEncoder = device.createCommandEncoder();

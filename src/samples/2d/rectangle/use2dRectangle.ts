@@ -59,13 +59,10 @@ const use2dRectangle = (canvasInfo: GPUDeviceInfo) => {
         label: 'Rectangle',
         size: rectVertexArray.byteLength,
         mappedAtCreation: true,
+        data: rectVertexArray,
       },
     ]);
 
-    new Float32Array(vertexBuffer.buffers[0].getMappedRange()).set(
-      rectVertexArray,
-    );
-    vertexBuffer.buffers[0].unmap();
     device.queue.writeBuffer(vertexBuffer.buffers[0], 0, rectVertexArray);
 
     const commandEncoder = device.createCommandEncoder();
