@@ -68,15 +68,13 @@ const use2dGrid = (canvasInfo: GPUDeviceInfo) => {
 
     const uniformArray = new Float32Array([gridCount, gridCount]);
 
-    const uniformBuffer = new WGPUBuffer(device, [
-      {
-        label: 'Grid Uniforms',
-        size: uniformArray.byteLength,
-        usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-      },
-    ]);
+    const uniformBuffer = device.createBuffer({
+      label: 'Grid Uniforms',
+      size: uniformArray.byteLength,
+      usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+    });
 
-    device.queue.writeBuffer(uniformBuffer.buffers[0], 0, uniformArray);
+    device.queue.writeBuffer(uniformBuffer, 0, uniformArray);
 
     const vertexBuffer = new WGPUBuffer(device, [
       {
@@ -93,7 +91,7 @@ const use2dGrid = (canvasInfo: GPUDeviceInfo) => {
       entries: [
         {
           binding: 0,
-          resource: { buffer: uniformBuffer.buffers[0] },
+          resource: { buffer: uniformBuffer },
         },
       ],
     });
