@@ -19,6 +19,7 @@ const Main: React.FC = () => {
     device,
     context,
     textureFormat,
+    canvas,
   });
 
   return (
