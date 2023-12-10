@@ -7,7 +7,7 @@ import vertexShader from '@/samples/2d/grid_state/vertex.wgsl';
 import fragmentShader from '@/samples/2d/grid_state/fragment.wgsl';
 import { convertColorIntoVec4 } from '@/util/math/color';
 
-import { rectVertexArray } from '@/mashes/2dSquare';
+import { rectVertexArray } from '@/mashes/2d/2dSquare';
 import WGPUBuffer from '@/util/classes/WGPUBuffer';
 
 const GRID_SIZE = 32;

@@ -9,7 +9,7 @@ import fragmentShader from '@/samples/2d/grid/fragment.wgsl';
 import WGPUBuffer from '@/util/classes/WGPUBuffer';
 import { convertColorIntoVec4 } from '@/util/math/color';
 
-import { rectVertexArray } from '@/mashes/2dSquare';
+import { rectVertexArray } from '@/mashes/2d/2dSquare';
 export const MIN__GRID_SIZE = 4;
 export const MAX__GRID_SIZE = 64;
 

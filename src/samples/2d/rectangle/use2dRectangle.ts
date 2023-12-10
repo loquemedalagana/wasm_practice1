@@ -6,7 +6,7 @@ import vertexShader from '@/samples/2d/rectangle/vertex.wgsl';
 // @ts-ignore
 import fragmentShader from '@/shaders/2d/fragments/simpleColor.frag.wgsl';
 
-import { rectVertexArray } from '@/mashes/2dRectangle';
+import { rectVertexArray } from '@/mashes/2d/2dRectangle';
 import { convertColorIntoVec4 } from '@/util/math/color';
 import WGPUBuffer from '@/util/classes/WGPUBuffer';
 

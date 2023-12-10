@@ -1,8 +1,8 @@
 import { useEffect } from 'react';
 import { GPUDeviceInfo } from '@/util/types/wgpu';
 
-import { create2dDotCircleMesh, VERTEX_COUNT } from '@/mashes/2dDotCircle';
-import { rectVertexArray } from '@/mashes/2dSquare';
+import { create2dDotCircleMesh, VERTEX_COUNT } from '@/mashes/2d/2dDotCircle';
+import { rectVertexArray } from '@/mashes/2d/2dSquare';
 
 // @ts-ignore
 import vertexShader from '@/shaders/2d/vertices/circle.vert.wgsl';
