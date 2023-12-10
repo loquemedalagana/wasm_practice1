@@ -61,7 +61,6 @@ const WGPUCanvas = forwardRef<
 
   return (
     <>
-      <canvas ref={inner} className="canvas"></canvas>
       {canvas ? (
         <WebGPUCanvasContext.Provider value={canvas}>
           {context && (
@@ -77,6 +76,7 @@ const WGPUCanvas = forwardRef<
       ) : (
         <LoadingSpinner />
       )}
+      <canvas ref={inner} className="canvas"></canvas>
     </>
   );
 });
