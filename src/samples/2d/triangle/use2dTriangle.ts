@@ -21,9 +21,6 @@ const use2dTriangle = (canvasInfo: GPUDeviceInfo) => {
     if (!device) {
       return;
     }
-
-    const commandEncoder = device.createCommandEncoder();
-
     const pipeline = device.createRenderPipeline({
       ...partialRenderPipelineDescriptor,
       layout: 'auto',
@@ -46,6 +43,7 @@ const use2dTriangle = (canvasInfo: GPUDeviceInfo) => {
       },
     });
 
+    const commandEncoder = device.createCommandEncoder();
     const passEncoder = commandEncoder.beginRenderPass({
       colorAttachments: [
         {

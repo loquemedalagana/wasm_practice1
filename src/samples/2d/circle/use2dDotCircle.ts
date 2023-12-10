@@ -21,8 +21,6 @@ const use2dDotCircle = (canvasInfo: GPUDeviceInfo) => {
       return;
     }
 
-    const commandEncoder = device.createCommandEncoder();
-
     const vertexBuffer = new WGPUBuffer(device, [
       {
         usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
@@ -37,17 +35,6 @@ const use2dDotCircle = (canvasInfo: GPUDeviceInfo) => {
     );
     vertexBuffer.buffers[0].unmap();
     device.queue.writeBuffer(vertexBuffer.buffers[0], 0, rectVertexArray);
-
-    const passEncoder = commandEncoder.beginRenderPass({
-      colorAttachments: [
-        {
-          view: context.getCurrentTexture().createView(),
-          loadOp: 'clear',
-          storeOp: 'store',
-          clearValue: convertColorIntoVec4(49, 48, 77),
-        },
-      ] as Iterable<GPURenderPassColorAttachment | null>,
-    });
 
     const pipeline = device.createRenderPipeline({
       layout: 'auto',
@@ -68,6 +55,18 @@ const use2dDotCircle = (canvasInfo: GPUDeviceInfo) => {
           },
         ],
       },
+    });
+
+    const commandEncoder = device.createCommandEncoder();
+    const passEncoder = commandEncoder.beginRenderPass({
+      colorAttachments: [
+        {
+          view: context.getCurrentTexture().createView(),
+          loadOp: 'clear',
+          storeOp: 'store',
+          clearValue: convertColorIntoVec4(49, 48, 77),
+        },
+      ] as Iterable<GPURenderPassColorAttachment | null>,
     });
 
     passEncoder.setPipeline(pipeline);

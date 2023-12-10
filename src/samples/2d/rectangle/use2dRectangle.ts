@@ -28,8 +28,6 @@ const use2dRectangle = (canvasInfo: GPUDeviceInfo) => {
     if (!device) {
       return;
     }
-    const commandEncoder = device.createCommandEncoder();
-
     const pipeline = device.createRenderPipeline({
       primitive: {
         topology: 'triangle-list',
@@ -70,6 +68,7 @@ const use2dRectangle = (canvasInfo: GPUDeviceInfo) => {
     vertexBuffer.buffers[0].unmap();
     device.queue.writeBuffer(vertexBuffer.buffers[0], 0, rectVertexArray);
 
+    const commandEncoder = device.createCommandEncoder();
     const passEncoder = commandEncoder.beginRenderPass({
       colorAttachments: [
         {
