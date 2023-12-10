@@ -4,7 +4,7 @@ import { GPUDeviceInfo } from '@/util/types/wgpu';
 // @ts-ignore
 import vertexShader from '@/samples/2d/rectangle/vertex.wgsl';
 // @ts-ignore
-import fragmentShader from '@/shaders/fragments/simpleColor.frag.wgsl';
+import fragmentShader from '@/shaders/2d/fragments/simpleColor.frag.wgsl';
 
 import { rectVertexArray } from '@/mashes/2dRectangle';
 import { convertColorIntoVec4 } from '@/util/math/color';

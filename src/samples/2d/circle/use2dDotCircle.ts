@@ -5,9 +5,9 @@ import { create2dDotCircleMesh, VERTEX_COUNT } from '@/mashes/2dDotCircle';
 import { rectVertexArray } from '@/mashes/2dSquare';
 
 // @ts-ignore
-import vertexShader from '@/shaders/vertices/circle.vert.wgsl';
+import vertexShader from '@/shaders/2d/vertices/circle.vert.wgsl';
 // @ts-ignore
-import fragmentShader from '@/shaders/fragments/simpleColor.frag.wgsl';
+import fragmentShader from '@/shaders/2d/fragments/simpleColor.frag.wgsl';
 import { convertColorIntoVec4 } from '@/util/math/color';
 import WGPUBuffer from '@/util/classes/WGPUBuffer';
 
