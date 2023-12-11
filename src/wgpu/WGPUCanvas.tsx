@@ -1,6 +1,7 @@
 import {
   forwardRef,
   PropsWithChildren,
+  useCallback,
   useEffect,
   useRef,
   useState,
@@ -35,6 +36,7 @@ const WGPUCanvas = forwardRef<
   HTMLCanvasElement,
   IWGPUCanvas & PropsWithChildren
 >(({ children }, ref) => {
+  const canvasBoxRef = useRef<HTMLDivElement>(null);
   const ownRef = useRef<HTMLCanvasElement>(null);
   const inner = useCombinedRefs<HTMLCanvasElement>(ref, ownRef);
   const [canvas, setCanvas] = useState<HTMLCanvasElement | null>(null);
@@ -76,7 +78,9 @@ const WGPUCanvas = forwardRef<
       ) : (
         <LoadingSpinner />
       )}
-      <canvas ref={inner} className="canvas"></canvas>
+      <div ref={canvasBoxRef} id="wgpu-box">
+        <canvas ref={inner} id="wgpu-canvas"></canvas>
+      </div>
     </>
   );
 });

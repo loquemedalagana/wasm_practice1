@@ -34,6 +34,10 @@ body {
   gap: 0.5em;
 }
 
+.sub-nav {
+
+}
+
 .sub-nav ul {
   display: flex;
   justify-content: space-evenly;
@@ -53,7 +57,7 @@ body {
 .wrapper {
   width: 100vw;
   max-width: 1600px;
-  height: fit-content;
+  height: 100%;
   padding: 1rem;
 }
 
@@ -71,16 +75,14 @@ body {
   align-items: center;
 }
 
-.canvas {
+#wgpu-box {
   width: 100%;
-  aspect-ratio: 1;
+  height: 100%;
   max-width: 800px;
 }
 
 @media screen and (min-width: 1200px) {
-  .canvas {
-    width: 100%;
-    aspect-ratio: 1;
+  #wgpu-box {
     max-width: 1000px;
   }
 }
@@ -92,4 +94,14 @@ body {
 
 .page-box {
   padding: 2rem;
+}
+
+.page-layout {
+  display: grid;
+  height: inherit;
+}
+
+.main-layout {
+  display: grid;
+  grid-template-rows: 1fr 9fr;
 }
