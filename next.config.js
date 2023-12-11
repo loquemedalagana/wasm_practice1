@@ -14,6 +14,7 @@ const nextConfig = {
         filename: 'static/[path][name].[hash][ext]'
       }
     });
+    // TODO: LOAD 3d model parser
     config.module.rules.push({
       test: /\.wgsl$/i,
       use: 'raw-loader',

@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { ChangeEventHandler, useEffect, useState } from 'react';
 import { GPUDeviceInfo } from '@/util/types/wgpu';
 
 // @ts-ignore
@@ -9,12 +9,19 @@ import fragmentShader from '@/samples/2d/grid/fragment.wgsl';
 import WGPUBuffer from '@/util/classes/WGPUBuffer';
 import { convertColorIntoVec4 } from '@/util/math/color';
 
-import { rectVertexArray } from '@/mashes/2dSquare';
-
-const GRID_SIZE = 16;
+import { rectVertexArray } from '@/mashes/2d/2dSquare';
+export const MIN__GRID_SIZE = 4;
+export const MAX__GRID_SIZE = 64;
 
 const use2dGrid = (canvasInfo: GPUDeviceInfo) => {
   const { device, context, textureFormat } = canvasInfo;
+  const [gridCount, setGridCount] = useState(16);
+
+  const handleGridCountInput: ChangeEventHandler<HTMLInputElement> = (e) => {
+    const newValue = parseInt(e.target.value);
+    const mod = newValue % 4;
+    setGridCount(newValue - mod);
+  };
 
   const vertexBufferLayout: GPUVertexBufferLayout = {
     arrayStride: 8,
@@ -28,13 +35,11 @@ const use2dGrid = (canvasInfo: GPUDeviceInfo) => {
   };
 
   // a uniform buffer that describes the grid
-  const uniformArray = new Float32Array([GRID_SIZE, GRID_SIZE]);
 
   useEffect(() => {
     if (!device) {
       return;
     }
-    const commandEncoder = device.createCommandEncoder();
 
     const pipeline = device.createRenderPipeline({
       primitive: {
@@ -61,15 +66,15 @@ const use2dGrid = (canvasInfo: GPUDeviceInfo) => {
       },
     });
 
-    const uniformBuffer = new WGPUBuffer(device, [
-      {
-        label: 'Grid Uniforms',
-        size: uniformArray.byteLength,
-        usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-      },
-    ]);
+    const uniformArray = new Float32Array([gridCount, gridCount]);
 
-    device.queue.writeBuffer(uniformBuffer.buffers[0], 0, uniformArray);
+    const uniformBuffer = device.createBuffer({
+      label: 'Grid Uniforms',
+      size: uniformArray.byteLength,
+      usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+    });
+
+    device.queue.writeBuffer(uniformBuffer, 0, uniformArray);
 
     const vertexBuffer = new WGPUBuffer(device, [
       {
@@ -77,6 +82,7 @@ const use2dGrid = (canvasInfo: GPUDeviceInfo) => {
         size: rectVertexArray.byteLength,
         mappedAtCreation: true,
         usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
+        data: rectVertexArray,
       },
     ]);
 
@@ -86,17 +92,14 @@ const use2dGrid = (canvasInfo: GPUDeviceInfo) => {
       entries: [
         {
           binding: 0,
-          resource: { buffer: uniformBuffer.buffers[0] },
+          resource: { buffer: uniformBuffer },
         },
       ],
     });
 
-    new Float32Array(vertexBuffer.buffers[0].getMappedRange()).set(
-      rectVertexArray,
-    );
-    vertexBuffer.buffers[0].unmap();
     device.queue.writeBuffer(vertexBuffer.buffers[0], 0, rectVertexArray);
 
+    const commandEncoder = device.createCommandEncoder();
     const passEncoder = commandEncoder.beginRenderPass({
       colorAttachments: [
         {
@@ -112,11 +115,16 @@ const use2dGrid = (canvasInfo: GPUDeviceInfo) => {
     passEncoder.setVertexBuffer(0, vertexBuffer.buffers[0]);
     passEncoder.setBindGroup(0, bindGroup);
 
-    passEncoder.draw(rectVertexArray.length / 2, GRID_SIZE * GRID_SIZE);
+    passEncoder.draw(rectVertexArray.length / 2, gridCount * gridCount);
 
     passEncoder.end();
     device.queue.submit([commandEncoder.finish()]);
-  }, []);
+  }, [gridCount]);
+
+  return {
+    gridCount,
+    handleGridCountInput,
+  };
 };
 
 export default use2dGrid;

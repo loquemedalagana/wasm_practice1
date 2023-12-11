@@ -7,7 +7,7 @@ import vertexShader from '@/samples/2d/grid_state/vertex.wgsl';
 import fragmentShader from '@/samples/2d/grid_state/fragment.wgsl';
 import { convertColorIntoVec4 } from '@/util/math/color';
 
-import { rectVertexArray } from '@/mashes/2dSquare';
+import { rectVertexArray } from '@/mashes/2d/2dSquare';
 import WGPUBuffer from '@/util/classes/WGPUBuffer';
 
 const GRID_SIZE = 32;
@@ -34,8 +34,6 @@ const use2dGridState = (canvasInfo: GPUDeviceInfo) => {
     if (!device) {
       return;
     }
-    const commandEncoder = device.createCommandEncoder();
-
     const pipeline = device.createRenderPipeline({
       primitive: {
         topology: 'triangle-list',
@@ -87,15 +85,13 @@ const use2dGridState = (canvasInfo: GPUDeviceInfo) => {
     device.queue.writeBuffer(cellStateBuffer.buffers[1], 0, cellStateArray);
 
     // uniform buffer
-    const uniformBuffer = new WGPUBuffer(device, [
-      {
-        label: 'Uniform Buffer',
-        usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-        size: uniformArray.byteLength,
-      },
-    ]);
+    const uniformBuffer = device.createBuffer({
+      label: 'Uniform Buffer',
+      usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+      size: uniformArray.byteLength,
+    });
 
-    device.queue.writeBuffer(uniformBuffer.buffers[0], 0, uniformArray);
+    device.queue.writeBuffer(uniformBuffer, 0, uniformArray);
 
     // vertex buffer
     const vertexBuffer = new WGPUBuffer(device, [
@@ -104,6 +100,7 @@ const use2dGridState = (canvasInfo: GPUDeviceInfo) => {
         size: rectVertexArray.byteLength,
         mappedAtCreation: true,
         usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
+        data: rectVertexArray,
       },
     ]);
 
@@ -113,7 +110,7 @@ const use2dGridState = (canvasInfo: GPUDeviceInfo) => {
       entries: [
         {
           binding: 0,
-          resource: { buffer: uniformBuffer.buffers[0] },
+          resource: { buffer: uniformBuffer },
         },
         {
           binding: 1,
@@ -122,12 +119,9 @@ const use2dGridState = (canvasInfo: GPUDeviceInfo) => {
       ],
     });
 
-    new Float32Array(vertexBuffer.buffers[0].getMappedRange()).set(
-      rectVertexArray,
-    );
-    vertexBuffer.buffers[0].unmap();
     device.queue.writeBuffer(vertexBuffer.buffers[0], 0, rectVertexArray);
 
+    const commandEncoder = device.createCommandEncoder();
     const passEncoder = commandEncoder.beginRenderPass({
       colorAttachments: [
         {

@@ -1,6 +1,7 @@
 import {
   forwardRef,
   PropsWithChildren,
+  useCallback,
   useEffect,
   useRef,
   useState,
@@ -26,6 +27,7 @@ function configureContextPresentation(
   context.configure({
     device,
     format: presentationFormat,
+    alphaMode: 'opaque',
   });
 }
 
@@ -35,6 +37,7 @@ const WGPUCanvas = forwardRef<
   HTMLCanvasElement,
   IWGPUCanvas & PropsWithChildren
 >(({ children }, ref) => {
+  const canvasBoxRef = useRef<HTMLDivElement>(null);
   const ownRef = useRef<HTMLCanvasElement>(null);
   const inner = useCombinedRefs<HTMLCanvasElement>(ref, ownRef);
   const [canvas, setCanvas] = useState<HTMLCanvasElement | null>(null);
@@ -44,11 +47,22 @@ const WGPUCanvas = forwardRef<
   );
   const device = useGPUDevice();
 
+  const resizeCanvas = useCallback(() => {
+    if (canvasBoxRef.current && ownRef.current) {
+      ownRef.current.width = canvasBoxRef.current.clientWidth;
+      ownRef.current.height = canvasBoxRef.current.clientHeight;
+      setCanvas(ownRef.current);
+    }
+  }, [canvasBoxRef, ownRef]);
+
   useEffect(() => {
+    if (canvasBoxRef.current && ownRef.current) {
+      ownRef.current.width = canvasBoxRef.current.clientWidth;
+      ownRef.current.height = canvasBoxRef.current.clientHeight;
+    }
     setCanvas(ownRef.current);
     if (device && ownRef.current) {
       const gpuContext = ownRef.current.getContext('webgpu');
-
       if (gpuContext) {
         setContext(gpuContext);
         configureContextPresentation(device, gpuContext);
@@ -59,9 +73,15 @@ const WGPUCanvas = forwardRef<
     }
   }, []);
 
+  useEffect(() => {
+    window.addEventListener('resize', resizeCanvas);
+    return () => {
+      window.removeEventListener('resize', resizeCanvas);
+    };
+  }, []);
+
   return (
     <>
-      <canvas ref={inner} className="canvas"></canvas>
       {canvas ? (
         <WebGPUCanvasContext.Provider value={canvas}>
           {context && (
@@ -77,6 +97,9 @@ const WGPUCanvas = forwardRef<
       ) : (
         <LoadingSpinner />
       )}
+      <div ref={canvasBoxRef} id="wgpu-box">
+        <canvas ref={inner} id="wgpu-canvas"></canvas>
+      </div>
     </>
   );
 });

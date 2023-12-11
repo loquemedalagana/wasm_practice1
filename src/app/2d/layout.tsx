@@ -3,7 +3,7 @@ import _2dPages from '@/samples/2d/pages/2dPages';
 
 const _2DLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
-    <section>
+    <>
       <nav className="sub-nav">
         <ul>
           {Object.keys(_2dPages).map((pageName) => {
@@ -25,7 +25,7 @@ const _2DLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         </ul>
       </nav>
       <section className="flex flex-col items-center">{children}</section>
-    </section>
+    </>
   );
 };
 

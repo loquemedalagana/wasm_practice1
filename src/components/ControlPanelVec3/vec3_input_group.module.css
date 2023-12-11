@@ -1,0 +1,9 @@
+.vector__input_group {
+    display: flex;
+    gap: 1rem;
+}
+
+.vector__input_wrapper {
+    display: flex;
+    flex-direction: column;
+}

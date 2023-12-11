@@ -14,13 +14,10 @@ const Main: React.FC = () => {
     device,
     context,
     textureFormat,
+    canvas,
   });
 
-  return (
-    <h2>
-      hello grid {canvas.clientWidth} X {canvas.clientHeight}
-    </h2>
-  );
+  return <></>;
 };
 
 export default Main;

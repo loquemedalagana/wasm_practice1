@@ -4,9 +4,9 @@ import { GPUDeviceInfo } from '@/util/types/wgpu';
 // @ts-ignore
 import vertexShader from '@/samples/2d/rectangle/vertex.wgsl';
 // @ts-ignore
-import fragmentShader from '@/shaders/fragments/simpleColor.frag.wgsl';
+import fragmentShader from '@/shaders/2d/fragments/simpleColor.frag.wgsl';
 
-import { rectVertexArray } from '@/mashes/2dRectangle';
+import { rectVertexArray } from '@/mashes/2d/2dRectangle';
 import { convertColorIntoVec4 } from '@/util/math/color';
 import WGPUBuffer from '@/util/classes/WGPUBuffer';
 
@@ -28,8 +28,6 @@ const use2dRectangle = (canvasInfo: GPUDeviceInfo) => {
     if (!device) {
       return;
     }
-    const commandEncoder = device.createCommandEncoder();
-
     const pipeline = device.createRenderPipeline({
       primitive: {
         topology: 'triangle-list',
@@ -61,15 +59,13 @@ const use2dRectangle = (canvasInfo: GPUDeviceInfo) => {
         label: 'Rectangle',
         size: rectVertexArray.byteLength,
         mappedAtCreation: true,
+        data: rectVertexArray,
       },
     ]);
 
-    new Float32Array(vertexBuffer.buffers[0].getMappedRange()).set(
-      rectVertexArray,
-    );
-    vertexBuffer.buffers[0].unmap();
     device.queue.writeBuffer(vertexBuffer.buffers[0], 0, rectVertexArray);
 
+    const commandEncoder = device.createCommandEncoder();
     const passEncoder = commandEncoder.beginRenderPass({
       colorAttachments: [
         {

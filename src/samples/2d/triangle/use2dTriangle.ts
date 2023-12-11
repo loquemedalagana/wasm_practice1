@@ -2,9 +2,9 @@ import { useEffect } from 'react';
 import { GPUDeviceInfo } from '@/util/types/wgpu';
 
 // @ts-ignore
-import vertexShader from '@/shaders/vertices/triangle.vert.wgsl';
+import vertexShader from '@/shaders/2d/vertices/triangle.vert.wgsl';
 // @ts-ignore
-import fragmentShader from '@/shaders/fragments/simpleColor.frag.wgsl';
+import fragmentShader from '@/shaders/2d/fragments/simpleColor.frag.wgsl';
 import { convertColorIntoVec4 } from '@/util/math/color';
 
 const use2dTriangle = (canvasInfo: GPUDeviceInfo) => {
@@ -21,9 +21,6 @@ const use2dTriangle = (canvasInfo: GPUDeviceInfo) => {
     if (!device) {
       return;
     }
-
-    const commandEncoder = device.createCommandEncoder();
-
     const pipeline = device.createRenderPipeline({
       ...partialRenderPipelineDescriptor,
       layout: 'auto',
@@ -46,6 +43,7 @@ const use2dTriangle = (canvasInfo: GPUDeviceInfo) => {
       },
     });
 
+    const commandEncoder = device.createCommandEncoder();
     const passEncoder = commandEncoder.beginRenderPass({
       colorAttachments: [
         {

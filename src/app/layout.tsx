@@ -49,7 +49,7 @@ export default function RootLayout({
             </ul>
           </nav>
         </section>
-        <main className="flex min-h-screen flex-col items-center justify-between">
+        <main className="min-h-screen main-layout">
           {children}
         </main>
         <footer className="footer">
