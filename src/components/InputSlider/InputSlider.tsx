@@ -3,6 +3,8 @@ import { ChangeEventHandler } from 'react';
 import styles from '@/components/InputSlider/input_slider.module.css';
 
 interface InputSliderProps {
+  label?: 'x' | 'y' | 'z';
+  placeholder?: React.ReactNode;
   value: number;
   min: number;
   max: number;
@@ -14,10 +16,12 @@ const InputSlider: React.FC<InputSliderProps> = ({
   max,
   value,
   handleInput,
+  label,
+  placeholder,
 }) => {
   return (
     <div className={styles.range__slider}>
-      <p>Current Grid cell count: {value}</p>
+      {placeholder}
       <input
         className={styles.sliderInput}
         type="range"

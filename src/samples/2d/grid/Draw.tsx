@@ -32,6 +32,7 @@ const Main: React.FC = () => {
         max={MAX__GRID_SIZE}
         handleInput={handleGridCountInput}
         value={gridCount}
+        placeholder={<p>Current Grid cell count: {gridCount}</p>}
       />
     </>
   );
