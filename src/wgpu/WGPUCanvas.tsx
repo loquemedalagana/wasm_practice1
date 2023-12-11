@@ -27,6 +27,7 @@ function configureContextPresentation(
   context.configure({
     device,
     format: presentationFormat,
+    alphaMode: 'opaque',
   });
 }
 
