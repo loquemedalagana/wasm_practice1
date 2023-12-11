@@ -23,18 +23,13 @@ const Main: React.FC = () => {
   });
 
   return (
-    <>
-      <h2>
-        hello grid {canvas.clientWidth} X {canvas.clientHeight}
-      </h2>
-      <InputSlider
-        min={MIN__GRID_SIZE}
-        max={MAX__GRID_SIZE}
-        handleInput={handleGridCountInput}
-        value={gridCount}
-        placeholder={<p>Current Grid cell count: {gridCount}</p>}
-      />
-    </>
+    <InputSlider
+      min={MIN__GRID_SIZE}
+      max={MAX__GRID_SIZE}
+      handleInput={handleGridCountInput}
+      value={gridCount}
+      placeholder={<p>Current Grid cell count: {gridCount}</p>}
+    />
   );
 };
 

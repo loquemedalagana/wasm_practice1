@@ -19,9 +19,7 @@ const Main: React.FC = () => {
   });
 
   return (
-    <h2>
-      hello circle {canvas.clientWidth} X {canvas.clientHeight}
-    </h2>
+    <></>
   );
 };
 

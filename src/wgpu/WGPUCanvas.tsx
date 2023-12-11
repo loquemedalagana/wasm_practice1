@@ -46,11 +46,22 @@ const WGPUCanvas = forwardRef<
   );
   const device = useGPUDevice();
 
+  const resizeCanvas = useCallback(() => {
+    if (canvasBoxRef.current && ownRef.current) {
+      ownRef.current.width = canvasBoxRef.current.clientWidth;
+      ownRef.current.height = canvasBoxRef.current.clientHeight;
+      setCanvas(ownRef.current);
+    }
+  }, [canvasBoxRef, ownRef]);
+
   useEffect(() => {
+    if (canvasBoxRef.current && ownRef.current) {
+      ownRef.current.width = canvasBoxRef.current.clientWidth;
+      ownRef.current.height = canvasBoxRef.current.clientHeight;
+    }
     setCanvas(ownRef.current);
     if (device && ownRef.current) {
       const gpuContext = ownRef.current.getContext('webgpu');
-
       if (gpuContext) {
         setContext(gpuContext);
         configureContextPresentation(device, gpuContext);
@@ -59,6 +70,13 @@ const WGPUCanvas = forwardRef<
         throw new Error('Failed to request GPUCanvasContext');
       }
     }
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener('resize', resizeCanvas);
+    return () => {
+      window.removeEventListener('resize', resizeCanvas);
+    };
   }, []);
 
   return (

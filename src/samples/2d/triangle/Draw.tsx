@@ -18,11 +18,7 @@ const Main: React.FC = () => {
     canvas,
   });
 
-  return (
-    <h2>
-      hello triangle {canvas.clientWidth} X {canvas.clientHeight}
-    </h2>
-  );
+  return <></>;
 };
 
 export default Main;
