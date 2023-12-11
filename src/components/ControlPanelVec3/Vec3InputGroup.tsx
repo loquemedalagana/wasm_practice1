@@ -54,7 +54,7 @@ const Vec3InputGroup: React.FC<IControlPanelVec3> = ({
           isVectorControl={true}
           placeholder={<p>{`z`}</p>}
         />
-        <p>{`(${v3[0]},${v3[1]},${v3[2]})`}</p>
+        <p>{`(${v3[0].toFixed(3)},${v3[1].toFixed(3)},${v3[2].toFixed(3)})`}</p>
       </div>
     </div>
   );
