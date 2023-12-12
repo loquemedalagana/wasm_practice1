@@ -11,6 +11,7 @@ interface IControlPanelVec3 {
   label: string; // TODO: will be changed -> model, view, proj
   handleInput: ChangeEventHandler<HTMLInputElement>;
   step: number;
+  disabled?: Array<boolean>;
 }
 const Vec3InputGroup: React.FC<IControlPanelVec3> = ({
   v3,
@@ -19,6 +20,7 @@ const Vec3InputGroup: React.FC<IControlPanelVec3> = ({
   label,
   handleInput,
   step,
+  disabled = [false, false, false],
 }) => {
   return (
     <div className={styles.vector__input_wrapper}>
@@ -33,6 +35,7 @@ const Vec3InputGroup: React.FC<IControlPanelVec3> = ({
           step={step}
           isVectorControl={true}
           placeholder={<p>{`x`}</p>}
+          disabled={disabled[0]}
         />
         <InputSlider
           name={'y'}
@@ -43,6 +46,7 @@ const Vec3InputGroup: React.FC<IControlPanelVec3> = ({
           step={step}
           isVectorControl={true}
           placeholder={<p>{`y`}</p>}
+          disabled={disabled[1]}
         />
         <InputSlider
           name={'z'}
@@ -53,6 +57,7 @@ const Vec3InputGroup: React.FC<IControlPanelVec3> = ({
           step={step}
           isVectorControl={true}
           placeholder={<p>{`z`}</p>}
+          disabled={disabled[2]}
         />
         <p>{`(${v3[0].toFixed(3)},${v3[1].toFixed(3)},${v3[2].toFixed(3)})`}</p>
       </div>

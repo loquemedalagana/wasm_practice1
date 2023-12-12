@@ -29,6 +29,7 @@ const Main: React.FC = () => {
         label={'translation'}
         handleInput={translationVec3Control.handleChangeInput}
         step={translationVec3Control.step}
+        disabled={[false, false, true]}
       />
       <Vec3InputGroup
         v3={rotationVec3Control.v3}
@@ -37,6 +38,7 @@ const Main: React.FC = () => {
         label={'rotation'}
         handleInput={rotationVec3Control.handleChangeInput}
         step={rotationVec3Control.step}
+        disabled={[true, true, false]}
       />
       <Vec3InputGroup
         v3={scaleVec3Control.v3}
@@ -45,6 +47,7 @@ const Main: React.FC = () => {
         label={'scale'}
         handleInput={scaleVec3Control.handleChangeInput}
         step={scaleVec3Control.step}
+        disabled={[false, false, false]}
       />
     </div>
   );
