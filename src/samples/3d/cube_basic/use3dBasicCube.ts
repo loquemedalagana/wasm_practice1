@@ -64,8 +64,6 @@ const use3dBasicCube = (canvasInfo: GPUDeviceInfo) => {
       },
     ]);
 
-    console.log(verticesBuffer.buffers);
-
     const pipeline = device.createRenderPipeline({
       primitive: {
         topology: 'triangle-list',
@@ -127,8 +125,6 @@ const use3dBasicCube = (canvasInfo: GPUDeviceInfo) => {
       rotationVec3Control.v3,
       scaleVec3Control.v3,
     );
-    console.log(transform);
-    console.log(modelViewProjection);
 
     const uniformBuffer = device.createBuffer({
       size: 4 * 16,
@@ -162,8 +158,6 @@ const use3dBasicCube = (canvasInfo: GPUDeviceInfo) => {
       modelViewProjection.viewProjectionMatrix,
     );
 
-    console.log(modelViewProjectionMatrix);
-
     device.queue.writeBuffer(
       uniformBuffer,
       0,
@@ -177,7 +171,7 @@ const use3dBasicCube = (canvasInfo: GPUDeviceInfo) => {
           view: textureView,
           loadOp: 'clear',
           storeOp: 'store',
-          clearValue: convertColorIntoVec4(187, 156, 192),
+          clearValue: convertColorIntoVec4(33, 53, 85),
         },
       ] as Iterable<GPURenderPassColorAttachment | null>,
       depthStencilAttachment: {
