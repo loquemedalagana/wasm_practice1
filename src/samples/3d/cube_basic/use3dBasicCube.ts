@@ -1,8 +1,8 @@
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import { mat4 } from 'wgpu-matrix';
 
 import { GPUDeviceInfo } from '@/util/types/wgpu';
-import WGPUBuffer from '@/util/classes/WGPUBuffer';
+import WGPUBufferGroup from '@/util/classes/WGPUBufferGroup';
 import { convertColorIntoVec4 } from '@/util/math/color';
 
 import CubeMesh from '@/mashes/3d/Cube';
@@ -33,14 +33,60 @@ const use3dBasicCube = (canvasInfo: GPUDeviceInfo) => {
     [0.1, 0.1, 0.1],
     [2.0, 2.0, 2.0],
   );
+  const cubeMesh = new CubeMesh();
+
+  const draw = useCallback(
+    (
+      device: GPUDevice,
+      verticesBuffer: WGPUBufferGroup,
+      uniformBuffer: GPUBuffer,
+      bindGroup: GPUBindGroup,
+      pipeline: GPURenderPipeline,
+      renderPassDescriptor: GPURenderPassDescriptor,
+    ) => {
+      const modelViewProjection = new ModelViewProjection(
+        canvas.width / canvas.height,
+      );
+
+      const transform = new Transform(
+        translationVec3Control.v3,
+        rotationVec3Control.v3,
+        scaleVec3Control.v3,
+      );
+
+      const modelViewProjectionMatrix = mat4.multiply(
+        transform.modelMatrix,
+        modelViewProjection.viewProjectionMatrix,
+      );
+
+      device.queue.writeBuffer(
+        uniformBuffer,
+        0,
+        modelViewProjectionMatrix as ArrayBuffer,
+      );
+
+      const commandEncoder = device.createCommandEncoder();
+      const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
+
+      passEncoder.setPipeline(pipeline);
+      passEncoder.setVertexBuffer(0, verticesBuffer.buffers[0]);
+      passEncoder.setVertexBuffer(1, verticesBuffer.buffers[1]);
+      passEncoder.setIndexBuffer(verticesBuffer.buffers[2], 'uint32');
+
+      passEncoder.setBindGroup(0, bindGroup);
+      passEncoder.draw(cubeMesh.numberOfVertices);
+      passEncoder.end();
+      device.queue.submit([commandEncoder.finish()]);
+    },
+    [scaleVec3Control.v3, translationVec3Control.v3, rotationVec3Control.v3],
+  );
 
   useEffect(() => {
     if (!device) {
       return;
     }
 
-    const cubeMesh = new CubeMesh();
-    const verticesBuffer = new WGPUBuffer(device, [
+    const verticesBuffer = new WGPUBufferGroup(device, [
       {
         label: 'vertex',
         size: cubeMesh.positions.byteLength,
@@ -160,38 +206,14 @@ const use3dBasicCube = (canvasInfo: GPUDeviceInfo) => {
       },
     };
 
-    const modelViewProjection = new ModelViewProjection(
-      canvas.width / canvas.height,
-    );
-
-    const transform = new Transform(
-      translationVec3Control.v3,
-      rotationVec3Control.v3,
-      scaleVec3Control.v3,
-    );
-
-    const modelViewProjectionMatrix = mat4.multiply(
-      transform.modelMatrix,
-      modelViewProjection.viewProjectionMatrix,
-    );
-
-    device.queue.writeBuffer(
+    draw(
+      device,
+      verticesBuffer,
       uniformBuffer,
-      0,
-      modelViewProjectionMatrix as ArrayBuffer,
+      bindGroup,
+      pipeline,
+      renderPassDescriptor,
     );
-
-    const commandEncoder = device.createCommandEncoder();
-    const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
-
-    passEncoder.setPipeline(pipeline);
-    passEncoder.setVertexBuffer(0, verticesBuffer.buffers[0]);
-    passEncoder.setVertexBuffer(1, verticesBuffer.buffers[1]);
-
-    passEncoder.setBindGroup(0, bindGroup);
-    passEncoder.draw(cubeMesh.numberOfVertices);
-    passEncoder.end();
-    device.queue.submit([commandEncoder.finish()]);
   }, [translationVec3Control.v3, rotationVec3Control.v3, scaleVec3Control.v3]);
 
   return {

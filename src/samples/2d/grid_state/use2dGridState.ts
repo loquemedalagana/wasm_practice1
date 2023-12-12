@@ -8,7 +8,7 @@ import fragmentShader from '@/samples/2d/grid_state/fragment.wgsl';
 import { convertColorIntoVec4 } from '@/util/math/color';
 
 import { rectVertexArray } from '@/mashes/2d/2dSquare';
-import WGPUBuffer from '@/util/classes/WGPUBuffer';
+import WGPUBufferGroup from '@/util/classes/WGPUBufferGroup';
 
 const GRID_SIZE = 32;
 
@@ -59,7 +59,7 @@ const use2dGridState = (canvasInfo: GPUDeviceInfo) => {
       },
     });
 
-    const cellStateBuffer = new WGPUBuffer(device, [
+    const cellStateBuffer = new WGPUBufferGroup(device, [
       {
         label: 'Cell State A',
         size: cellStateArray.byteLength,
@@ -94,7 +94,7 @@ const use2dGridState = (canvasInfo: GPUDeviceInfo) => {
     device.queue.writeBuffer(uniformBuffer, 0, uniformArray);
 
     // vertex buffer
-    const vertexBuffer = new WGPUBuffer(device, [
+    const vertexBuffer = new WGPUBufferGroup(device, [
       {
         label: 'Rectangle',
         size: rectVertexArray.byteLength,

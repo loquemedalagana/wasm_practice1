@@ -1,4 +1,4 @@
-class WGPUBuffer {
+class WGPUBufferGroup {
   buffers: GPUBuffer[];
   constructor(
     device: GPUDevice,
@@ -20,4 +20,4 @@ class WGPUBuffer {
   }
 }
 
-export default WGPUBuffer;
+export default WGPUBufferGroup;

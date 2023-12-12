@@ -9,7 +9,7 @@ import vertexShader from '@/shaders/2d/vertices/circle.vert.wgsl';
 // @ts-ignore
 import fragmentShader from '@/shaders/2d/fragments/simpleColor.frag.wgsl';
 import { convertColorIntoVec4 } from '@/util/math/color';
-import WGPUBuffer from '@/util/classes/WGPUBuffer';
+import WGPUBufferGroup from '@/util/classes/WGPUBufferGroup';
 
 const use2dDotCircle = (canvasInfo: GPUDeviceInfo) => {
   const { device, context, textureFormat } = canvasInfo;
@@ -21,7 +21,7 @@ const use2dDotCircle = (canvasInfo: GPUDeviceInfo) => {
       return;
     }
 
-    const vertexBuffer = new WGPUBuffer(
+    const vertexBuffer = new WGPUBufferGroup(
       device,
       [
         {
