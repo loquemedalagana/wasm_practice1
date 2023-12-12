@@ -8,7 +8,7 @@ class CubeMesh {
     this.positions = new Float32Array(positions);
     this.colors = new Float32Array(colors);
     this.indices = new Uint32Array(indices);
-    this.numberOfVertices = positions.length / 3;
+    this.numberOfVertices = this.positions.length / 3;
   }
 }
 
