@@ -7,16 +7,18 @@ class ModelViewProjection {
 
   constructor(
     aspectRatio: number = 1.0,
-    cameraPosition: Vec3 = [2, 2, 4],
-    lookDirection: Vec3 = [0, 0, 0],
-    upDirection: Vec3 = [0, 1, 0],
+    viewEyePosition: Vec3 = [2, 2, 4],
+    viewEyeDirection: Vec3 = [0, 0, 1],
+    viewUp: Vec3 = [0, -1, 0],
+    nearZ: number = 0.01,
+    farZ: number = 100.0,
   ) {
-    this.viewMatrix = mat4.lookAt(cameraPosition, lookDirection, upDirection);
+    this.viewMatrix = mat4.lookAt(viewEyePosition, viewEyeDirection, viewUp);
     this.projectionMatrix = mat4.perspective(
       (2 * Math.PI) / 5,
       aspectRatio,
-      0.1,
-      100.0,
+      nearZ,
+      farZ,
     );
     this.viewProjectionMatrix = mat4.multiply(
       this.projectionMatrix,

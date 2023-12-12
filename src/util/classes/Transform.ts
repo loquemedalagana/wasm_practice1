@@ -1,4 +1,4 @@
-import { Mat3, mat4, Mat4, Vec3 } from 'wgpu-matrix';
+import { mat4, Mat4, Vec3 } from 'wgpu-matrix';
 
 class Transform {
   public modelMatrix: Mat4;
@@ -14,6 +14,7 @@ class Transform {
   ) {
     this.modelMatrix = mat4.scaling(scaling);
     this.translateMatrix = mat4.translate(this.modelMatrix, translation);
+
     this.rotateXMatrix = mat4.rotateX(this.modelMatrix, rotation[0]);
     this.rotateYMatrix = mat4.rotateY(this.modelMatrix, rotation[1]);
     this.rotateZMatrix = mat4.rotateZ(this.modelMatrix, rotation[2]);

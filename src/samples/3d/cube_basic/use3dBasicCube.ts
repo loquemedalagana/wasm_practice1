@@ -116,16 +116,6 @@ const use3dBasicCube = (canvasInfo: GPUDeviceInfo) => {
       },
     });
 
-    // create uniform data
-    const modelViewProjection = new ModelViewProjection(
-      canvas.width / canvas.height,
-    );
-    const transform = new Transform(
-      translationVec3Control.v3,
-      rotationVec3Control.v3,
-      scaleVec3Control.v3,
-    );
-
     const uniformBuffer = device.createBuffer({
       size: 4 * 16,
       usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
@@ -153,19 +143,7 @@ const use3dBasicCube = (canvasInfo: GPUDeviceInfo) => {
       usage: GPUTextureUsage.RENDER_ATTACHMENT,
     });
 
-    const modelViewProjectionMatrix = mat4.multiply(
-      transform.modelMatrix,
-      modelViewProjection.viewProjectionMatrix,
-    );
-
-    device.queue.writeBuffer(
-      uniformBuffer,
-      0,
-      modelViewProjectionMatrix as ArrayBuffer,
-    );
-
-    const commandEncoder = device.createCommandEncoder();
-    const passEncoder = commandEncoder.beginRenderPass({
+    const renderPassDescriptor: GPURenderPassDescriptor = {
       colorAttachments: [
         {
           view: textureView,
@@ -180,7 +158,31 @@ const use3dBasicCube = (canvasInfo: GPUDeviceInfo) => {
         depthLoadOp: 'clear',
         depthStoreOp: 'store',
       },
-    });
+    };
+
+    const modelViewProjection = new ModelViewProjection(
+      canvas.width / canvas.height,
+    );
+
+    const transform = new Transform(
+      translationVec3Control.v3,
+      rotationVec3Control.v3,
+      scaleVec3Control.v3,
+    );
+
+    const modelViewProjectionMatrix = mat4.multiply(
+      transform.modelMatrix,
+      modelViewProjection.viewProjectionMatrix,
+    );
+
+    device.queue.writeBuffer(
+      uniformBuffer,
+      0,
+      modelViewProjectionMatrix as ArrayBuffer,
+    );
+
+    const commandEncoder = device.createCommandEncoder();
+    const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
 
     passEncoder.setPipeline(pipeline);
     passEncoder.setVertexBuffer(0, verticesBuffer.buffers[0]);
