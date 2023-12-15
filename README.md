@@ -23,6 +23,8 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
  - [hello grid](https://loquemedalagana.github.io/wgpu_start/2d/grid)
 
 ## referance
+ - [wgpu type def](https://webgpu.rocks/)
+ - [wgsl referance](https://webgpu.rocks/wgsl/language/types/)
  - [tutorial](https://github.com/jack1232/WebGPU-Step-By-Step/blob/main/README.md)
  - [my first wgpu app](https://codelabs.developers.google.com/your-first-webgpu-app)
  - [gltf rendering with webGPU](https://www.willusher.io/graphics/2023/05/16/0-to-gltf-first-mesh)
