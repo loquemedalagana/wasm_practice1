@@ -3,7 +3,7 @@ import { ChangeEventHandler } from 'react';
 import styles from '@/components/CheckBox/checkbox.module.css';
 
 interface CheckBoxProps {
-  name?: string;
+  name: string;
   checked: boolean;
   handleChange: ChangeEventHandler<HTMLInputElement>;
   placeholder?: React.ReactNode;
@@ -17,9 +17,7 @@ const CheckBox: React.FC<CheckBoxProps> = ({
 }) => {
   return (
     <div className={styles.checkbox__wrapper}>
-      <div>
-        {placeholder}
-      </div>
+      <div>{placeholder}</div>
       <div className={styles.checkbox}>
         <div className={styles.check}>
           <input
