@@ -5,6 +5,9 @@ import { useWebGPUContext } from '@/wgpu/useWGPUContextContext';
 
 import Vec3InputGroup from '@/components/ControlPanelVec3/Vec3InputGroup';
 import use3dBasicCube from '@/samples/3d/cube_basic/use3dBasicCube';
+import CheckBox from '@/components/CheckBox/CheckBox';
+import StyledHr from '@/components/StyledHr/StyledHr';
+import CheckBoxGroup from '@/components/CheckBox/CheckBoxGroup';
 
 const Main: React.FC = () => {
   const device = useGPUDevice();
@@ -12,16 +15,30 @@ const Main: React.FC = () => {
   const context = useWebGPUContext();
   const textureFormat = useTextureFormat();
 
-  const { translationVec3Control, rotationVec3Control, scaleVec3Control } =
-    use3dBasicCube({
-      device,
-      context,
-      textureFormat,
-      canvas,
-    });
+  const {
+    translationVec3Control,
+    rotationVec3Control,
+    scaleVec3Control,
+    wireFrameActive,
+    handleWireFrame,
+  } = use3dBasicCube({
+    device,
+    context,
+    textureFormat,
+    canvas,
+  });
 
   return (
     <div>
+      <CheckBoxGroup>
+        <CheckBox
+          name="wireframe"
+          checked={wireFrameActive}
+          handleChange={handleWireFrame}
+          placeholder="wireframe"
+        />
+      </CheckBoxGroup>
+      <StyledHr />
       <Vec3InputGroup
         v3={translationVec3Control.v3}
         minV3={translationVec3Control.minV3}
