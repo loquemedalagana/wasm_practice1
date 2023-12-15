@@ -6,7 +6,7 @@ import vertexShader from '@/samples/2d/grid/vertex.wgsl';
 // @ts-ignore
 import fragmentShader from '@/samples/2d/grid/fragment.wgsl';
 
-import WGPUBuffer from '@/util/classes/WGPUBuffer';
+import WGPUBufferGroup from '@/util/classes/WGPUBufferGroup';
 import { convertColorIntoVec4 } from '@/util/math/color';
 
 import { rectVertexArray } from '@/mashes/2d/2dSquare';
@@ -76,7 +76,7 @@ const use2dGrid = (canvasInfo: GPUDeviceInfo) => {
 
     device.queue.writeBuffer(uniformBuffer, 0, uniformArray);
 
-    const vertexBuffer = new WGPUBuffer(device, [
+    const vertexBuffer = new WGPUBufferGroup(device, [
       {
         label: 'Rectangle',
         size: rectVertexArray.byteLength,

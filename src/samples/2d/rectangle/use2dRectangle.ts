@@ -8,7 +8,7 @@ import fragmentShader from '@/shaders/2d/fragments/simpleColor.frag.wgsl';
 
 import { rectVertexArray } from '@/mashes/2d/2dRectangle';
 import { convertColorIntoVec4 } from '@/util/math/color';
-import WGPUBuffer from '@/util/classes/WGPUBuffer';
+import WGPUBufferGroup from '@/util/classes/WGPUBufferGroup';
 
 const use2dRectangle = (canvasInfo: GPUDeviceInfo) => {
   const { device, context, textureFormat } = canvasInfo;
@@ -53,7 +53,7 @@ const use2dRectangle = (canvasInfo: GPUDeviceInfo) => {
       },
     });
 
-    const vertexBuffer = new WGPUBuffer(device, [
+    const vertexBuffer = new WGPUBufferGroup(device, [
       {
         usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
         label: 'Rectangle',

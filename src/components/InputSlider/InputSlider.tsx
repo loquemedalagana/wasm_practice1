@@ -12,6 +12,7 @@ interface InputSliderProps {
   handleInput: ChangeEventHandler<HTMLInputElement>;
   step?: number;
   isVectorControl?: boolean;
+  disabled?: boolean;
 }
 
 const InputSlider: React.FC<InputSliderProps> = ({
@@ -23,6 +24,7 @@ const InputSlider: React.FC<InputSliderProps> = ({
   isVectorControl = false,
   placeholder,
   step,
+  disabled = false,
 }) => {
   const boxStyle = isVectorControl
     ? `${styles.range__slider} ${styles.vector_input}`
@@ -41,6 +43,7 @@ const InputSlider: React.FC<InputSliderProps> = ({
           defaultValue={value}
           onChange={handleInput}
           step={step}
+          disabled={disabled}
         />
       </div>
     </div>

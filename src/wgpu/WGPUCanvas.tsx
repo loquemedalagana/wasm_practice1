@@ -40,7 +40,6 @@ const WGPUCanvas = forwardRef<
   const canvasBoxRef = useRef<HTMLDivElement>(null);
   const ownRef = useRef<HTMLCanvasElement>(null);
   const inner = useCombinedRefs<HTMLCanvasElement>(ref, ownRef);
-  const [canvas, setCanvas] = useState<HTMLCanvasElement | null>(null);
   const [context, setContext] = useState<GPUCanvasContext | null>(null);
   const [textureFormat, setTextureFormat] = useState<GPUTextureFormat | null>(
     null,
@@ -51,7 +50,6 @@ const WGPUCanvas = forwardRef<
     if (canvasBoxRef.current && ownRef.current) {
       ownRef.current.width = canvasBoxRef.current.clientWidth;
       ownRef.current.height = canvasBoxRef.current.clientHeight;
-      setCanvas(ownRef.current);
     }
   }, [canvasBoxRef, ownRef]);
 
@@ -60,7 +58,7 @@ const WGPUCanvas = forwardRef<
       ownRef.current.width = canvasBoxRef.current.clientWidth;
       ownRef.current.height = canvasBoxRef.current.clientHeight;
     }
-    setCanvas(ownRef.current);
+
     if (device && ownRef.current) {
       const gpuContext = ownRef.current.getContext('webgpu');
       if (gpuContext) {
@@ -82,8 +80,8 @@ const WGPUCanvas = forwardRef<
 
   return (
     <>
-      {canvas ? (
-        <WebGPUCanvasContext.Provider value={canvas}>
+      {ownRef.current ? (
+        <WebGPUCanvasContext.Provider value={ownRef.current}>
           {context && (
             <WebGPUContext.Provider value={context}>
               {textureFormat && (
