@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react';
+import { ChangeEventHandler, useCallback, useEffect, useState } from 'react';
 import { mat4 } from 'wgpu-matrix';
 
 import { GPUDeviceInfo } from '@/util/types/wgpu';
@@ -18,6 +18,12 @@ import Transform from '@/util/classes/Transform';
 
 const use3dBasicCube = (canvasInfo: GPUDeviceInfo) => {
   const { device, context, textureFormat, canvas } = canvasInfo;
+  const [wireFrameActive, setWireFrameActive] = useState(false);
+
+  const handleWireFrame: ChangeEventHandler<HTMLInputElement> = (e) => {
+    setWireFrameActive(e.currentTarget.checked);
+  };
+
   const translationVec3Control = useVec3Control(
     [0, 0, 0],
     [-2, -2, -2],
@@ -42,7 +48,7 @@ const use3dBasicCube = (canvasInfo: GPUDeviceInfo) => {
       uniformBuffer: GPUBuffer,
       bindGroup: GPUBindGroup,
       pipeline: GPURenderPipeline,
-      renderPassDescriptor: GPURenderPassDescriptor,
+      depthTexture: GPUTexture,
     ) => {
       const modelViewProjection = new ModelViewProjection(
         canvas.width / canvas.height,
@@ -65,16 +71,33 @@ const use3dBasicCube = (canvasInfo: GPUDeviceInfo) => {
         modelViewProjectionMatrix as ArrayBuffer,
       );
 
+      const renderPassDescriptor: GPURenderPassDescriptor = {
+        colorAttachments: [
+          {
+            view: context.getCurrentTexture().createView(),
+            loadOp: 'clear',
+            storeOp: 'store',
+            clearValue: convertColorIntoVec4(33, 53, 85),
+          },
+        ] as Iterable<GPURenderPassColorAttachment | null>,
+        depthStencilAttachment: {
+          view: depthTexture.createView(),
+          depthClearValue: 1.0,
+          depthLoadOp: 'clear',
+          depthStoreOp: 'store',
+        },
+      };
+
       const commandEncoder = device.createCommandEncoder();
       const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
 
       passEncoder.setPipeline(pipeline);
       passEncoder.setVertexBuffer(0, verticesBuffer.buffers[0]);
       passEncoder.setVertexBuffer(1, verticesBuffer.buffers[1]);
-      passEncoder.setIndexBuffer(verticesBuffer.buffers[2], 'uint32');
 
+      passEncoder.setIndexBuffer(verticesBuffer.buffers[2], 'uint32');
       passEncoder.setBindGroup(0, bindGroup);
-      passEncoder.draw(cubeMesh.numberOfVertices);
+      passEncoder.drawIndexed(cubeMesh.numberOfVertices);
       passEncoder.end();
       device.queue.submit([commandEncoder.finish()]);
     },
@@ -112,7 +135,7 @@ const use3dBasicCube = (canvasInfo: GPUDeviceInfo) => {
 
     const pipeline = device.createRenderPipeline({
       primitive: {
-        topology: 'triangle-list',
+        topology: wireFrameActive ? 'line-list' : 'triangle-list',
         cullMode: 'back',
       },
       depthStencil: {
@@ -182,29 +205,11 @@ const use3dBasicCube = (canvasInfo: GPUDeviceInfo) => {
       ],
     });
 
-    const textureView = context.getCurrentTexture().createView();
     const depthTexture = device.createTexture({
       size: [canvas.width, canvas.height, 1],
       format: 'depth24plus',
       usage: GPUTextureUsage.RENDER_ATTACHMENT,
     });
-
-    const renderPassDescriptor: GPURenderPassDescriptor = {
-      colorAttachments: [
-        {
-          view: textureView,
-          loadOp: 'clear',
-          storeOp: 'store',
-          clearValue: convertColorIntoVec4(33, 53, 85),
-        },
-      ] as Iterable<GPURenderPassColorAttachment | null>,
-      depthStencilAttachment: {
-        view: depthTexture.createView(),
-        depthClearValue: 1.0,
-        depthLoadOp: 'clear',
-        depthStoreOp: 'store',
-      },
-    };
 
     draw(
       device,
@@ -212,14 +217,21 @@ const use3dBasicCube = (canvasInfo: GPUDeviceInfo) => {
       uniformBuffer,
       bindGroup,
       pipeline,
-      renderPassDescriptor,
+      depthTexture,
     );
-  }, [translationVec3Control.v3, rotationVec3Control.v3, scaleVec3Control.v3]);
+  }, [
+    wireFrameActive,
+    translationVec3Control.v3,
+    rotationVec3Control.v3,
+    scaleVec3Control.v3,
+  ]);
 
   return {
     translationVec3Control,
     rotationVec3Control,
     scaleVec3Control,
+    wireFrameActive,
+    handleWireFrame,
   };
 };
 

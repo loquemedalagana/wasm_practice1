@@ -1,14 +1,34 @@
+import { Vec3, vec3 } from 'wgpu-matrix';
+
 class CubeMesh {
+  vertices: Float32Array;
   positions: Float32Array;
   colors: Float32Array;
   indices: Uint32Array;
   numberOfVertices: number;
 
   constructor() {
-    this.positions = new Float32Array(positions);
-    this.colors = new Float32Array(colors);
+    this.vertices = new Float32Array(
+      positions.reduce((acc: number[], cur: Vec3, currentIndex) => {
+        const curPos = cur as number[];
+        const curColor = colors[currentIndex] as number[];
+        return [...acc, ...curPos, ...curColor];
+      }, []),
+    );
+    this.positions = new Float32Array(
+      positions.reduce((acc: number[], cur: Vec3) => {
+        const curArray = cur as number[];
+        return [...acc, ...curArray];
+      }, []),
+    );
+    this.colors = new Float32Array(
+      colors.reduce((acc: number[], cur: Vec3) => {
+        const curArray = cur as number[];
+        return [...acc, ...curArray];
+      }, []),
+    );
     this.indices = new Uint32Array(indices);
-    this.numberOfVertices = this.positions.length / 3;
+    this.numberOfVertices = this.indices.length;
   }
 }
 
@@ -16,104 +36,80 @@ export default CubeMesh;
 
 // prettier-ignore
 const positions = [
-  // front
-  -1, -1,  1,
-  1, -1,  1,
-  1,  1,  1,
-  1,  1,  1,
-  -1,  1,  1,
-  -1, -1,  1,
-
-  // right
-  1, -1,  1,
-  1, -1, -1,
-  1,  1, -1,
-  1,  1, -1,
-  1,  1,  1,
-  1, -1,  1,
-
-  // back
-  -1, -1, -1,
-  -1,  1, -1,
-  1,  1, -1,
-  1,  1, -1,
-  1, -1, -1,
-  -1, -1, -1,
-
-  // left
-  -1, -1,  1,
-  -1,  1,  1,
-  -1,  1, -1,
-  -1,  1, -1,
-  -1, -1, -1,
-  -1, -1,  1,
-
   // top
-  -1,  1,  1,
-  1,  1,  1,
-  1,  1, -1,
-  1,  1, -1,
-  -1,  1, -1,
-  -1,  1,  1,
+  vec3.create(-1, 1, -1),
+  vec3.create(-1, 1, 1),
+  vec3.create(1, 1, 1),
+  vec3.create(1, 1, -1),
 
   // bottom
-  -1, -1,  1,
-  -1, -1, -1,
-  1, -1, -1,
-  1, -1, -1,
-  1, -1,  1,
-  -1, -1,  1
+  vec3.create(-1, -1, -1),
+  vec3.create(1, -1, -1),
+  vec3.create(1, -1, 1),
+  vec3.create(-1, -1, 1),
+
+  // front
+  vec3.create(-1, -1, -1),
+  vec3.create(-1, 1, -1),
+  vec3.create(1, 1, -1),
+  vec3.create(1, -1, -1),
+
+  // back
+  vec3.create(-1, -1, 1),
+  vec3.create(1, -1, 1),
+  vec3.create(1, 1, 1),
+  vec3.create(-1, 1, 1),
+
+  // left
+  vec3.create(-1, -1, 1),
+  vec3.create(-1, 1, 1),
+  vec3.create(-1, 1, -1),
+  vec3.create(-1, -1, -1),
+
+  // right
+  vec3.create(1, -1, 1),
+  vec3.create(1, -1, -1),
+  vec3.create(1, 1, -1),
+  vec3.create(1, 1, 1),
 ];
 
 // prettier-ignore
 const colors = [
-  // front - blue
-  0, 0, 1,
-  0, 0, 1,
-  0, 0, 1,
-  0, 0, 1,
-  0, 0, 1,
-  0, 0, 1,
+  // top
+  vec3.create(1, 0, 0),
+  vec3.create(1, 0, 0),
+  vec3.create(1, 0, 0),
+  vec3.create(1, 0, 0),
 
-  // right - red
-  1, 0, 0,
-  1, 0, 0,
-  1, 0, 0,
-  1, 0, 0,
-  1, 0, 0,
-  1, 0, 0,
+  // bottom
+  vec3.create(0, 1, 0),
+  vec3.create(0, 1, 0),
+  vec3.create(0, 1, 0),
+  vec3.create(0, 1, 0),
 
-  //back - yellow
-  1, 1, 0,
-  1, 1, 0,
-  1, 1, 0,
-  1, 1, 0,
-  1, 1, 0,
-  1, 1, 0,
+  // front
+  vec3.create(0, 0, 1),
+  vec3.create(0, 0, 1),
+  vec3.create(0, 0, 1),
+  vec3.create(0, 0, 1),
 
-  //left - aqua
-  0, 1, 1,
-  0, 1, 1,
-  0, 1, 1,
-  0, 1, 1,
-  0, 1, 1,
-  0, 1, 1,
+  // back
+  vec3.create(0, 1, 1),
+  vec3.create(0, 1, 1),
+  vec3.create(0, 1, 1),
+  vec3.create(0, 1, 1),
 
-  // top - green
-  0, 1, 0,
-  0, 1, 0,
-  0, 1, 0,
-  0, 1, 0,
-  0, 1, 0,
-  0, 1, 0,
+  // left
+  vec3.create(1, 1, 0),
+  vec3.create(1, 1, 0),
+  vec3.create(1, 1, 0),
+  vec3.create(1, 1, 0),
 
-  // bottom - fuchsia
-  1, 0, 1,
-  1, 0, 1,
-  1, 0, 1,
-  1, 0, 1,
-  1, 0, 1,
-  1, 0, 1
+  // right
+  vec3.create(1, 0, 1),
+  vec3.create(1, 0, 1),
+  vec3.create(1, 0, 1),
+  vec3.create(1, 0, 1),
 ];
 
 // prettier-ignore

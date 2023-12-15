@@ -7,7 +7,10 @@ class WGPUBufferGroup {
     >,
   ) {
     this.buffers = bufferDescriptors.map((bufferDescriptor) => {
-      const buffer = device.createBuffer(bufferDescriptor);
+      const buffer = device.createBuffer({
+        ...bufferDescriptor,
+        mappedAtCreation: true,
+      });
       if (bufferDescriptor.data) {
         new Float32Array(buffer.getMappedRange()).set(bufferDescriptor.data);
         buffer.unmap();
