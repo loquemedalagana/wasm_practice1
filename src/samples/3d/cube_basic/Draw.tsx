@@ -47,7 +47,7 @@ const Main: React.FC = () => {
         label={'scale'}
         handleInput={scaleVec3Control.handleChangeInput}
         step={scaleVec3Control.step}
-        disabled={[false, false, false]}
+        disabled={[false, false, true]}
       />
     </div>
   );
