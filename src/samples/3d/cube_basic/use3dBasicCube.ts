@@ -45,11 +45,55 @@ const use3dBasicCube = (canvasInfo: GPUDeviceInfo) => {
     (
       device: GPUDevice,
       verticesBuffer: WGPUBufferGroup,
-      uniformBuffer: GPUBuffer,
-      bindGroup: GPUBindGroup,
       pipeline: GPURenderPipeline,
-      depthTexture: GPUTexture,
     ) => {
+      const transform = new Transform(
+        translationVec3Control.v3,
+        rotationVec3Control.v3,
+        scaleVec3Control.v3,
+      );
+
+      const modelViewProjection = new ModelViewProjection(
+        canvas.width / canvas.height,
+      );
+
+      const modelViewProjectionMatrix = mat4.multiply(
+        transform.modelMatrix,
+        modelViewProjection.viewProjectionMatrix,
+      );
+
+      const uniformBuffer = device.createBuffer({
+        size: (modelViewProjectionMatrix as Float32Array).byteLength,
+        usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+      });
+
+      const bindGroup = device.createBindGroup({
+        label: 'Cube renderer bind group',
+        layout: pipeline.getBindGroupLayout(0),
+        entries: [
+          {
+            binding: 0,
+            resource: {
+              buffer: uniformBuffer,
+              offset: 0,
+              size: (modelViewProjectionMatrix as Float32Array).byteLength,
+            },
+          },
+        ],
+      });
+
+      const depthTexture = device.createTexture({
+        size: [canvas.width, canvas.height, 1],
+        format: 'depth24plus',
+        usage: GPUTextureUsage.RENDER_ATTACHMENT,
+      });
+
+      device.queue.writeBuffer(
+        uniformBuffer,
+        0,
+        modelViewProjectionMatrix as ArrayBuffer,
+      );
+
       const renderPassDescriptor: GPURenderPassDescriptor = {
         colorAttachments: [
           {
@@ -164,61 +208,7 @@ const use3dBasicCube = (canvasInfo: GPUDeviceInfo) => {
       },
     });
 
-    const transform = new Transform(
-      translationVec3Control.v3,
-      rotationVec3Control.v3,
-      scaleVec3Control.v3,
-    );
-
-    const modelViewProjection = new ModelViewProjection(
-      canvas.width / canvas.height,
-    );
-
-    const modelViewProjectionMatrix = mat4.multiply(
-      transform.modelMatrix,
-      modelViewProjection.viewProjectionMatrix,
-    );
-
-    const uniformBuffer = device.createBuffer({
-      size: (modelViewProjectionMatrix as Float32Array).byteLength,
-      usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-    });
-
-    const bindGroup = device.createBindGroup({
-      label: 'Cube renderer bind group',
-      layout: pipeline.getBindGroupLayout(0),
-      entries: [
-        {
-          binding: 0,
-          resource: {
-            buffer: uniformBuffer,
-            offset: 0,
-            size: (modelViewProjectionMatrix as Float32Array).byteLength,
-          },
-        },
-      ],
-    });
-
-    const depthTexture = device.createTexture({
-      size: [canvas.width, canvas.height, 1],
-      format: 'depth24plus',
-      usage: GPUTextureUsage.RENDER_ATTACHMENT,
-    });
-
-    device.queue.writeBuffer(
-      uniformBuffer,
-      0,
-      modelViewProjectionMatrix as ArrayBuffer,
-    );
-
-    draw(
-      device,
-      verticesBuffer,
-      uniformBuffer,
-      bindGroup,
-      pipeline,
-      depthTexture,
-    );
+    draw(device, verticesBuffer, pipeline);
   }, [
     wireFrameActive,
     translationVec3Control.v3,
