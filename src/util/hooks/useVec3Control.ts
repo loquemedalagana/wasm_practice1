@@ -1,5 +1,5 @@
 import { ChangeEventHandler, useState } from 'react';
-import { Vec3 } from 'wgpu-matrix';
+import { vec3, Vec3 } from 'wgpu-matrix';
 import { V3 } from '@/util/types/math';
 
 interface IVec3Control {
@@ -8,6 +8,8 @@ interface IVec3Control {
   maxV3: Vec3;
   step: number;
   handleChangeInput: ChangeEventHandler<HTMLInputElement>;
+  handleAutomizeRotation: () => void;
+  initializeVec3: () => void;
 }
 
 const useVec3Control = (
@@ -37,12 +39,25 @@ const useVec3Control = (
     }
   };
 
+  const handleAutomizeRotation = () => {
+    setV3((prevState) => {
+      const [x, y, z] = prevState as number[];
+      return vec3.create(x + 0.01, y + 0.01, z + 0.01);
+    });
+  };
+
+  const initializeVec3 = () => {
+    setV3(initialValue);
+  };
+
   return {
     v3,
     handleChangeInput,
     minV3,
     maxV3,
     step,
+    handleAutomizeRotation,
+    initializeVec3,
   };
 };
 

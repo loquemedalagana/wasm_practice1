@@ -21,6 +21,8 @@ const Main: React.FC = () => {
     scaleVec3Control,
     wireFrameActive,
     handleWireFrame,
+    animationActive,
+    handleAnimation,
   } = use3dBasicCube({
     device,
     context,
@@ -32,40 +34,50 @@ const Main: React.FC = () => {
     <div>
       <CheckBoxGroup>
         <CheckBox
+          name="animation"
+          checked={animationActive}
+          handleChange={handleAnimation}
+          placeholder="animation"
+        />
+        <CheckBox
           name="wireframe"
           checked={wireFrameActive}
           handleChange={handleWireFrame}
           placeholder="wireframe"
         />
       </CheckBoxGroup>
-      <StyledHr />
-      <Vec3InputGroup
-        v3={translationVec3Control.v3}
-        minV3={translationVec3Control.minV3}
-        maxV3={translationVec3Control.maxV3}
-        label={'translation'}
-        handleInput={translationVec3Control.handleChangeInput}
-        step={translationVec3Control.step}
-        disabled={[false, false, true]}
-      />
-      <Vec3InputGroup
-        v3={rotationVec3Control.v3}
-        minV3={rotationVec3Control.minV3}
-        maxV3={rotationVec3Control.maxV3}
-        label={'rotation'}
-        handleInput={rotationVec3Control.handleChangeInput}
-        step={rotationVec3Control.step}
-        disabled={[true, true, false]}
-      />
-      <Vec3InputGroup
-        v3={scaleVec3Control.v3}
-        minV3={scaleVec3Control.minV3}
-        maxV3={scaleVec3Control.maxV3}
-        label={'scale'}
-        handleInput={scaleVec3Control.handleChangeInput}
-        step={scaleVec3Control.step}
-        disabled={[false, false, true]}
-      />
+      {!animationActive && (
+        <>
+          <StyledHr />
+          <Vec3InputGroup
+            v3={translationVec3Control.v3}
+            minV3={translationVec3Control.minV3}
+            maxV3={translationVec3Control.maxV3}
+            label={'translation'}
+            handleInput={translationVec3Control.handleChangeInput}
+            step={translationVec3Control.step}
+            disabled={[false, false, true]}
+          />
+          <Vec3InputGroup
+            v3={rotationVec3Control.v3}
+            minV3={rotationVec3Control.minV3}
+            maxV3={rotationVec3Control.maxV3}
+            label={'rotation'}
+            handleInput={rotationVec3Control.handleChangeInput}
+            step={rotationVec3Control.step}
+            disabled={[true, true, false]}
+          />
+          <Vec3InputGroup
+            v3={scaleVec3Control.v3}
+            minV3={scaleVec3Control.minV3}
+            maxV3={scaleVec3Control.maxV3}
+            label={'scale'}
+            handleInput={scaleVec3Control.handleChangeInput}
+            step={scaleVec3Control.step}
+            disabled={[false, false, true]}
+          />
+        </>
+      )}
     </div>
   );
 };

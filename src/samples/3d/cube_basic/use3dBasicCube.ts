@@ -1,4 +1,4 @@
-import { ChangeEventHandler, useCallback, useEffect, useState } from 'react';
+import { ChangeEventHandler, useEffect, useState } from 'react';
 import { mat4 } from 'wgpu-matrix';
 
 import { GPUDeviceInfo } from '@/util/types/wgpu';
@@ -22,6 +22,9 @@ const use3dBasicCube = (canvasInfo: GPUDeviceInfo) => {
   const [animationActive, setAnimationActive] = useState(false);
 
   const handleAnimation: ChangeEventHandler<HTMLInputElement> = (e) => {
+    if (!e.currentTarget.checked) {
+      rotationVec3Control.initializeVec3();
+    }
     setAnimationActive(e.currentTarget.checked);
   };
 
@@ -45,6 +48,19 @@ const use3dBasicCube = (canvasInfo: GPUDeviceInfo) => {
     [2.0, 2.0, 2.0],
   );
   const cubeMesh = new CubeMesh();
+
+  const createAnimation = (draw: () => void, isAnimation: boolean = false) => {
+    function step() {
+      if (isAnimation) {
+        rotationVec3Control.handleAutomizeRotation();
+      } else {
+        rotationVec3Control.initializeVec3();
+      }
+      draw();
+      requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  };
 
   useEffect(() => {
     if (!device) {
@@ -206,8 +222,9 @@ const use3dBasicCube = (canvasInfo: GPUDeviceInfo) => {
       device.queue.submit([commandEncoder.finish()]);
     };
 
-    draw();
+    createAnimation(draw, animationActive);
   }, [
+    animationActive,
     wireFrameActive,
     translationVec3Control.v3,
     rotationVec3Control.v3,
