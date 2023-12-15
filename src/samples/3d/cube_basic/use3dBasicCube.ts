@@ -50,27 +50,6 @@ const use3dBasicCube = (canvasInfo: GPUDeviceInfo) => {
       pipeline: GPURenderPipeline,
       depthTexture: GPUTexture,
     ) => {
-      const modelViewProjection = new ModelViewProjection(
-        canvas.width / canvas.height,
-      );
-
-      const transform = new Transform(
-        translationVec3Control.v3,
-        rotationVec3Control.v3,
-        scaleVec3Control.v3,
-      );
-
-      const modelViewProjectionMatrix = mat4.multiply(
-        transform.modelMatrix,
-        modelViewProjection.viewProjectionMatrix,
-      );
-
-      device.queue.writeBuffer(
-        uniformBuffer,
-        0,
-        modelViewProjectionMatrix as ArrayBuffer,
-      );
-
       const renderPassDescriptor: GPURenderPassDescriptor = {
         colorAttachments: [
           {
@@ -185,13 +164,28 @@ const use3dBasicCube = (canvasInfo: GPUDeviceInfo) => {
       },
     });
 
+    const transform = new Transform(
+      translationVec3Control.v3,
+      rotationVec3Control.v3,
+      scaleVec3Control.v3,
+    );
+
+    const modelViewProjection = new ModelViewProjection(
+      canvas.width / canvas.height,
+    );
+
+    const modelViewProjectionMatrix = mat4.multiply(
+      transform.modelMatrix,
+      modelViewProjection.viewProjectionMatrix,
+    );
+
     const uniformBuffer = device.createBuffer({
-      size: 4 * 16,
+      size: (modelViewProjectionMatrix as Float32Array).byteLength,
       usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
     });
 
     const bindGroup = device.createBindGroup({
-      label: 'Cell renderer bind group',
+      label: 'Cube renderer bind group',
       layout: pipeline.getBindGroupLayout(0),
       entries: [
         {
@@ -199,7 +193,7 @@ const use3dBasicCube = (canvasInfo: GPUDeviceInfo) => {
           resource: {
             buffer: uniformBuffer,
             offset: 0,
-            size: 64,
+            size: (modelViewProjectionMatrix as Float32Array).byteLength,
           },
         },
       ],
@@ -210,6 +204,12 @@ const use3dBasicCube = (canvasInfo: GPUDeviceInfo) => {
       format: 'depth24plus',
       usage: GPUTextureUsage.RENDER_ATTACHMENT,
     });
+
+    device.queue.writeBuffer(
+      uniformBuffer,
+      0,
+      modelViewProjectionMatrix as ArrayBuffer,
+    );
 
     draw(
       device,
