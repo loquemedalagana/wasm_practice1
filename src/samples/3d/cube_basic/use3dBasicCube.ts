@@ -19,6 +19,11 @@ import Transform from '@/util/classes/Transform';
 const use3dBasicCube = (canvasInfo: GPUDeviceInfo) => {
   const { device, context, textureFormat, canvas } = canvasInfo;
   const [wireFrameActive, setWireFrameActive] = useState(false);
+  const [animationActive, setAnimationActive] = useState(false);
+
+  const handleAnimation: ChangeEventHandler<HTMLInputElement> = (e) => {
+    setAnimationActive(e.currentTarget.checked);
+  };
 
   const handleWireFrame: ChangeEventHandler<HTMLInputElement> = (e) => {
     setWireFrameActive(e.currentTarget.checked);
@@ -40,92 +45,6 @@ const use3dBasicCube = (canvasInfo: GPUDeviceInfo) => {
     [2.0, 2.0, 2.0],
   );
   const cubeMesh = new CubeMesh();
-
-  const draw = useCallback(
-    (
-      device: GPUDevice,
-      verticesBuffer: WGPUBufferGroup,
-      pipeline: GPURenderPipeline,
-    ) => {
-      const transform = new Transform(
-        translationVec3Control.v3,
-        rotationVec3Control.v3,
-        scaleVec3Control.v3,
-      );
-
-      const modelViewProjection = new ModelViewProjection(
-        canvas.width / canvas.height,
-      );
-
-      const modelViewProjectionMatrix = mat4.multiply(
-        transform.modelMatrix,
-        modelViewProjection.viewProjectionMatrix,
-      );
-
-      const uniformBuffer = device.createBuffer({
-        size: (modelViewProjectionMatrix as Float32Array).byteLength,
-        usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-      });
-
-      const bindGroup = device.createBindGroup({
-        label: 'Cube renderer bind group',
-        layout: pipeline.getBindGroupLayout(0),
-        entries: [
-          {
-            binding: 0,
-            resource: {
-              buffer: uniformBuffer,
-              offset: 0,
-              size: (modelViewProjectionMatrix as Float32Array).byteLength,
-            },
-          },
-        ],
-      });
-
-      const depthTexture = device.createTexture({
-        size: [canvas.width, canvas.height, 1],
-        format: 'depth24plus',
-        usage: GPUTextureUsage.RENDER_ATTACHMENT,
-      });
-
-      device.queue.writeBuffer(
-        uniformBuffer,
-        0,
-        modelViewProjectionMatrix as ArrayBuffer,
-      );
-
-      const renderPassDescriptor: GPURenderPassDescriptor = {
-        colorAttachments: [
-          {
-            view: context.getCurrentTexture().createView(),
-            loadOp: 'clear',
-            storeOp: 'store',
-            clearValue: convertColorIntoVec4(33, 53, 85),
-          },
-        ] as Iterable<GPURenderPassColorAttachment | null>,
-        depthStencilAttachment: {
-          view: depthTexture.createView(),
-          depthClearValue: 1.0,
-          depthLoadOp: 'clear',
-          depthStoreOp: 'store',
-        },
-      };
-
-      const commandEncoder = device.createCommandEncoder();
-      const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
-
-      passEncoder.setPipeline(pipeline);
-      passEncoder.setVertexBuffer(0, verticesBuffer.buffers[0]);
-      passEncoder.setVertexBuffer(1, verticesBuffer.buffers[1]);
-
-      passEncoder.setIndexBuffer(verticesBuffer.buffers[2], 'uint32');
-      passEncoder.setBindGroup(0, bindGroup);
-      passEncoder.drawIndexed(cubeMesh.numberOfVertices);
-      passEncoder.end();
-      device.queue.submit([commandEncoder.finish()]);
-    },
-    [scaleVec3Control.v3, translationVec3Control.v3, rotationVec3Control.v3],
-  );
 
   useEffect(() => {
     if (!device) {
@@ -208,7 +127,86 @@ const use3dBasicCube = (canvasInfo: GPUDeviceInfo) => {
       },
     });
 
-    draw(device, verticesBuffer, pipeline);
+    const draw = () => {
+      const transform = new Transform(
+        translationVec3Control.v3,
+        rotationVec3Control.v3,
+        scaleVec3Control.v3,
+      );
+
+      const modelViewProjection = new ModelViewProjection(
+        canvas.width / canvas.height,
+      );
+
+      const modelViewProjectionMatrix = mat4.multiply(
+        transform.modelMatrix,
+        modelViewProjection.viewProjectionMatrix,
+      );
+
+      const uniformBuffer = device.createBuffer({
+        size: (modelViewProjectionMatrix as Float32Array).byteLength,
+        usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+      });
+
+      const bindGroup = device.createBindGroup({
+        label: 'Cube renderer bind group',
+        layout: pipeline.getBindGroupLayout(0),
+        entries: [
+          {
+            binding: 0,
+            resource: {
+              buffer: uniformBuffer,
+              offset: 0,
+              size: (modelViewProjectionMatrix as Float32Array).byteLength,
+            },
+          },
+        ],
+      });
+
+      const depthTexture = device.createTexture({
+        size: [canvas.width, canvas.height, 1],
+        format: 'depth24plus',
+        usage: GPUTextureUsage.RENDER_ATTACHMENT,
+      });
+
+      device.queue.writeBuffer(
+        uniformBuffer,
+        0,
+        modelViewProjectionMatrix as ArrayBuffer,
+      );
+
+      const renderPassDescriptor: GPURenderPassDescriptor = {
+        colorAttachments: [
+          {
+            view: context.getCurrentTexture().createView(),
+            loadOp: 'clear',
+            storeOp: 'store',
+            clearValue: convertColorIntoVec4(33, 53, 85),
+          },
+        ] as Iterable<GPURenderPassColorAttachment | null>,
+        depthStencilAttachment: {
+          view: depthTexture.createView(),
+          depthClearValue: 1.0,
+          depthLoadOp: 'clear',
+          depthStoreOp: 'store',
+        },
+      };
+
+      const commandEncoder = device.createCommandEncoder();
+      const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
+
+      passEncoder.setPipeline(pipeline);
+      passEncoder.setVertexBuffer(0, verticesBuffer.buffers[0]);
+      passEncoder.setVertexBuffer(1, verticesBuffer.buffers[1]);
+
+      passEncoder.setIndexBuffer(verticesBuffer.buffers[2], 'uint32');
+      passEncoder.setBindGroup(0, bindGroup);
+      passEncoder.drawIndexed(cubeMesh.numberOfVertices);
+      passEncoder.end();
+      device.queue.submit([commandEncoder.finish()]);
+    };
+
+    draw();
   }, [
     wireFrameActive,
     translationVec3Control.v3,
@@ -222,6 +220,8 @@ const use3dBasicCube = (canvasInfo: GPUDeviceInfo) => {
     scaleVec3Control,
     wireFrameActive,
     handleWireFrame,
+    animationActive,
+    handleAnimation,
   };
 };
 
