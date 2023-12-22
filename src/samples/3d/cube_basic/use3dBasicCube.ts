@@ -70,17 +70,10 @@ const use3dBasicCube = (canvasInfo: GPUDeviceInfo) => {
     const verticesBuffer = new WGPUBufferGroup(device, [
       {
         label: 'vertex',
-        size: cubeMesh.positions.byteLength,
+        size: cubeMesh.vertices.byteLength,
         mappedAtCreation: true,
         usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
-        data: cubeMesh.positions,
-      },
-      {
-        label: 'color',
-        size: cubeMesh.colors.byteLength,
-        mappedAtCreation: true,
-        usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
-        data: cubeMesh.colors,
+        data: cubeMesh.vertices,
       },
       {
         label: 'index',
@@ -109,22 +102,17 @@ const use3dBasicCube = (canvasInfo: GPUDeviceInfo) => {
         entryPoint: 'main',
         buffers: [
           {
-            arrayStride: 12,
+            arrayStride: 24,
             attributes: [
               {
                 format: 'float32x3',
                 offset: 0,
                 shaderLocation: 0, // Position, see vertex shader
               },
-            ] as Iterable<GPUVertexAttribute>,
-          },
-          {
-            arrayStride: 12,
-            attributes: [
               {
                 format: 'float32x3',
-                offset: 0,
-                shaderLocation: 1, // Position, see vertex shader
+                offset: 4 * 3,
+                shaderLocation: 1,
               },
             ] as Iterable<GPUVertexAttribute>,
           },
@@ -159,6 +147,7 @@ const use3dBasicCube = (canvasInfo: GPUDeviceInfo) => {
         modelViewProjection.viewProjectionMatrix,
       );
 
+      // constant buffer in direct X
       const uniformBuffer = device.createBuffer({
         size: (modelViewProjectionMatrix as Float32Array).byteLength,
         usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
@@ -213,9 +202,8 @@ const use3dBasicCube = (canvasInfo: GPUDeviceInfo) => {
 
       passEncoder.setPipeline(pipeline);
       passEncoder.setVertexBuffer(0, verticesBuffer.buffers[0]);
-      passEncoder.setVertexBuffer(1, verticesBuffer.buffers[1]);
 
-      passEncoder.setIndexBuffer(verticesBuffer.buffers[2], 'uint32');
+      passEncoder.setIndexBuffer(verticesBuffer.buffers[1], 'uint32');
       passEncoder.setBindGroup(0, bindGroup);
       passEncoder.drawIndexed(cubeMesh.numberOfVertices);
       passEncoder.end();
