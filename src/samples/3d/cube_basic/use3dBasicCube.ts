@@ -93,7 +93,7 @@ const use3dBasicCube = (
       passEncoder.end();
       device.queue.submit([commandEncoder.finish()]);
     },
-    [],
+    [modelViewProjectionMatrix],
   );
 
   useEffect(() => {
@@ -166,7 +166,7 @@ const use3dBasicCube = (
     });
 
     draw(device, verticesBuffer, pipeline);
-  }, [wireFrameActive]);
+  }, [wireFrameActive, modelViewProjectionMatrix]);
 
   return {
     wireFrameActive,
