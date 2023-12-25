@@ -29,7 +29,8 @@ const use3dBasicCube = (
   const draw = useCallback(
     (
       device: GPUDevice,
-      verticesBuffer: WGPUBufferGroup,
+      vertexBuffer: GPUBuffer,
+      indexBuffer: GPUBuffer,
       pipeline: GPURenderPipeline,
     ) => {
       // constant buffer in direct X
@@ -86,8 +87,8 @@ const use3dBasicCube = (
       const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
 
       passEncoder.setPipeline(pipeline);
-      passEncoder.setVertexBuffer(0, verticesBuffer.buffers[0]);
-      passEncoder.setIndexBuffer(verticesBuffer.buffers[1], 'uint32');
+      passEncoder.setVertexBuffer(0, vertexBuffer);
+      passEncoder.setIndexBuffer(indexBuffer, 'uint32');
       passEncoder.setBindGroup(0, bindGroup);
       passEncoder.drawIndexed(cubeMesh.indices.length);
       passEncoder.end();
@@ -165,7 +166,12 @@ const use3dBasicCube = (
       },
     });
 
-    draw(device, verticesBuffer, pipeline);
+    draw(
+      device,
+      verticesBuffer.buffers[0],
+      verticesBuffer.buffers[1],
+      pipeline,
+    );
   }, [wireFrameActive, modelViewProjectionMatrix]);
 
   return {
