@@ -5,7 +5,6 @@ class CubeMesh {
   positions: Float32Array;
   colors: Float32Array;
   indices: Uint32Array;
-  numberOfVertices: number;
 
   constructor() {
     this.vertices = new Float32Array(
@@ -28,7 +27,6 @@ class CubeMesh {
       }, []),
     );
     this.indices = new Uint32Array(indices);
-    this.numberOfVertices = this.indices.length;
   }
 }
 

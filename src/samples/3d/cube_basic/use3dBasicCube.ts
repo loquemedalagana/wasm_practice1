@@ -1,5 +1,5 @@
 import { ChangeEventHandler, useCallback, useEffect, useState } from 'react';
-import { mat4 } from 'wgpu-matrix';
+import { Vec4 } from 'wgpu-matrix';
 
 import { GPUDeviceInfo } from '@/util/types/wgpu';
 import WGPUBufferGroup from '@/util/classes/WGPUBufferGroup';
@@ -12,11 +12,11 @@ import vertexShader from '@/shaders/3d/vertices/cube.vert.wgsl';
 
 // @ts-ignore
 import fragmentShader from '@/shaders/3d/fragments/vertexPositionColor.frag.wgsl';
-import ModelViewProjection from '@/util/classes/ModelViewProjection';
-import useVec3Control from '@/util/hooks/useVec3Control';
-import Transform from '@/util/classes/Transform';
 
-const use3dBasicCube = (canvasInfo: GPUDeviceInfo) => {
+const use3dBasicCube = (
+  canvasInfo: GPUDeviceInfo,
+  modelViewProjectionMatrix: Vec4,
+) => {
   const { device, context, textureFormat, canvas } = canvasInfo;
   const [wireFrameActive, setWireFrameActive] = useState(false);
 
@@ -24,21 +24,6 @@ const use3dBasicCube = (canvasInfo: GPUDeviceInfo) => {
     setWireFrameActive(e.currentTarget.checked);
   };
 
-  const translationVec3Control = useVec3Control(
-    [0, 0, 0],
-    [-2, -2, -2],
-    [2, 2, 2],
-  );
-  const rotationVec3Control = useVec3Control(
-    [0, 0, 0],
-    [-Math.PI, -Math.PI, -Math.PI],
-    [Math.PI, Math.PI, Math.PI],
-  );
-  const scaleVec3Control = useVec3Control(
-    [1.0, 1.0, 1.0],
-    [0.1, 0.1, 0.1],
-    [2.0, 2.0, 2.0],
-  );
   const cubeMesh = new CubeMesh();
 
   const draw = useCallback(
@@ -47,21 +32,6 @@ const use3dBasicCube = (canvasInfo: GPUDeviceInfo) => {
       verticesBuffer: WGPUBufferGroup,
       pipeline: GPURenderPipeline,
     ) => {
-      const transform = new Transform(
-        translationVec3Control.v3,
-        rotationVec3Control.v3,
-        scaleVec3Control.v3,
-      );
-
-      const modelViewProjection = new ModelViewProjection(
-        canvas.width / canvas.height,
-      );
-
-      const modelViewProjectionMatrix = mat4.multiply(
-        transform.modelMatrix,
-        modelViewProjection.viewProjectionMatrix,
-      );
-
       // constant buffer in direct X
       const uniformBuffer = device.createBuffer({
         size: (modelViewProjectionMatrix as Float32Array).byteLength,
@@ -119,11 +89,11 @@ const use3dBasicCube = (canvasInfo: GPUDeviceInfo) => {
       passEncoder.setVertexBuffer(0, verticesBuffer.buffers[0]);
       passEncoder.setIndexBuffer(verticesBuffer.buffers[1], 'uint32');
       passEncoder.setBindGroup(0, bindGroup);
-      passEncoder.drawIndexed(cubeMesh.numberOfVertices);
+      passEncoder.drawIndexed(cubeMesh.indices.length);
       passEncoder.end();
       device.queue.submit([commandEncoder.finish()]);
     },
-    [scaleVec3Control.v3, translationVec3Control.v3, rotationVec3Control.v3],
+    [],
   );
 
   useEffect(() => {
@@ -171,7 +141,7 @@ const use3dBasicCube = (canvasInfo: GPUDeviceInfo) => {
               {
                 format: 'float32x3',
                 offset: 0,
-                shaderLocation: 0, // Position, see vertex shader
+                shaderLocation: 0,
               },
               {
                 format: 'float32x3',
@@ -196,17 +166,9 @@ const use3dBasicCube = (canvasInfo: GPUDeviceInfo) => {
     });
 
     draw(device, verticesBuffer, pipeline);
-  }, [
-    wireFrameActive,
-    translationVec3Control.v3,
-    rotationVec3Control.v3,
-    scaleVec3Control.v3,
-  ]);
+  }, [wireFrameActive]);
 
   return {
-    translationVec3Control,
-    rotationVec3Control,
-    scaleVec3Control,
     wireFrameActive,
     handleWireFrame,
   };
