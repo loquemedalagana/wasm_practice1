@@ -1,5 +1,4 @@
 import {
-  forwardRef,
   PropsWithChildren,
   useCallback,
   useEffect,
@@ -8,7 +7,6 @@ import {
 } from 'react';
 
 import LoadingSpinner from '@/components/LoadingSpinner/LoadingSpinner';
-import { useCombinedRefs } from '@/util/UI/useCombinedRef';
 import { WebGPUCanvasContext } from '@/wgpu/useWGPUCanvas';
 import { WebGPUContext } from '@/wgpu/useWGPUContextContext';
 import { TextureFormatContext } from '@/wgpu/useTextureFormat';
@@ -33,13 +31,12 @@ function configureContextPresentation(
 
 interface IWGPUCanvas {}
 
-const WGPUCanvas = forwardRef<
-  HTMLCanvasElement,
-  IWGPUCanvas & PropsWithChildren
->(({ children }, ref) => {
+const WGPUCanvas: React.FC<IWGPUCanvas & PropsWithChildren> = ({
+  children,
+}) => {
   const canvasBoxRef = useRef<HTMLDivElement>(null);
   const ownRef = useRef<HTMLCanvasElement>(null);
-  const inner = useCombinedRefs<HTMLCanvasElement>(ref, ownRef);
+  const [canvas, setCanvas] = useState<HTMLCanvasElement | null>(null);
   const [context, setContext] = useState<GPUCanvasContext | null>(null);
   const [textureFormat, setTextureFormat] = useState<GPUTextureFormat | null>(
     null,
@@ -50,14 +47,14 @@ const WGPUCanvas = forwardRef<
     if (canvasBoxRef.current && ownRef.current) {
       ownRef.current.width = canvasBoxRef.current.clientWidth;
       ownRef.current.height = canvasBoxRef.current.clientHeight;
+      console.log(ownRef.current.width, ownRef.current.height);
+      setCanvas(ownRef.current);
     }
   }, [canvasBoxRef, ownRef]);
 
   useEffect(() => {
-    if (canvasBoxRef.current && ownRef.current) {
-      ownRef.current.width = canvasBoxRef.current.clientWidth;
-      ownRef.current.height = canvasBoxRef.current.clientHeight;
-    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
 
     if (device && ownRef.current) {
       const gpuContext = ownRef.current.getContext('webgpu');
@@ -69,10 +66,7 @@ const WGPUCanvas = forwardRef<
         throw new Error('Failed to request GPUCanvasContext');
       }
     }
-  }, []);
 
-  useEffect(() => {
-    window.addEventListener('resize', resizeCanvas);
     return () => {
       window.removeEventListener('resize', resizeCanvas);
     };
@@ -80,8 +74,8 @@ const WGPUCanvas = forwardRef<
 
   return (
     <>
-      {ownRef.current ? (
-        <WebGPUCanvasContext.Provider value={ownRef.current}>
+      {canvas ? (
+        <WebGPUCanvasContext.Provider value={canvas}>
           {context && (
             <WebGPUContext.Provider value={context}>
               {textureFormat && (
@@ -96,12 +90,10 @@ const WGPUCanvas = forwardRef<
         <LoadingSpinner />
       )}
       <div ref={canvasBoxRef} id="wgpu-box">
-        <canvas ref={inner} id="wgpu-canvas"></canvas>
+        <canvas ref={ownRef} id="wgpu-canvas"></canvas>
       </div>
     </>
   );
-});
-
-WGPUCanvas.displayName = 'WGPUCanvas';
+};
 
 export default WGPUCanvas;
