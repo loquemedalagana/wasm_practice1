@@ -2,7 +2,7 @@ import { ChangeEventHandler, useState } from 'react';
 import { Vec3 } from 'wgpu-matrix';
 import { V3 } from '@/util/types/math';
 
-interface IVec3Control {
+export interface IVec3Control {
   v3: Vec3;
   minV3: Vec3;
   maxV3: Vec3;
