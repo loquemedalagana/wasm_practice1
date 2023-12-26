@@ -1,10 +1,10 @@
 import {
   forwardRef,
   PropsWithChildren,
+  useCallback,
   useEffect,
   useRef,
   useState,
-  useMemo,
 } from 'react';
 
 import LoadingSpinner from '@/components/LoadingSpinner/LoadingSpinner';
@@ -13,9 +13,6 @@ import { WebGPUCanvasContext } from '@/wgpu/useWGPUCanvas';
 import { WebGPUContext } from '@/wgpu/useWGPUContextContext';
 import { TextureFormatContext } from '@/wgpu/useTextureFormat';
 import { useGPUDevice } from '@/wgpu/useWebGPUDevice';
-import { useAutoSize } from '@/util/UI/useAutoSize';
-
-import styles from '@/wgpu/canvas.module.css';
 
 function getPreferredCanvasFormat() {
   return navigator.gpu.getPreferredCanvasFormat();
@@ -34,61 +31,57 @@ function configureContextPresentation(
   });
 }
 
-interface IWGPUCanvas {
-  width?: number;
-  height?: number;
-  fullscreen?: boolean;
-  downscale?: number;
-}
+interface IWGPUCanvas {}
 
 const WGPUCanvas = forwardRef<
   HTMLCanvasElement,
   IWGPUCanvas & PropsWithChildren
->(({ children, downscale = 0, width, height, fullscreen = true }, ref) => {
-  const autoSize = useAutoSize();
+>(({ children }, ref) => {
+  const canvasBoxRef = useRef<HTMLDivElement>(null);
   const ownRef = useRef<HTMLCanvasElement>(null);
-  const inner = useCombinedRefs<HTMLCanvasElement>(ref, ownRef, autoSize);
-  const [canvas, setCanvas] = useState<HTMLCanvasElement | null>(null);
+  const inner = useCombinedRefs<HTMLCanvasElement>(ref, ownRef);
   const [context, setContext] = useState<GPUCanvasContext | null>(null);
   const [textureFormat, setTextureFormat] = useState<GPUTextureFormat | null>(
     null,
   );
   const device = useGPUDevice();
 
-  useEffect(() => {
-    if (device) {
-      setCanvas(ownRef.current);
-      if (ownRef.current) {
-        const gpuContext = ownRef.current.getContext('webgpu');
+  const resizeCanvas = useCallback(() => {
+    if (canvasBoxRef.current && ownRef.current) {
+      ownRef.current.width = canvasBoxRef.current.clientWidth;
+      ownRef.current.height = canvasBoxRef.current.clientHeight;
+    }
+  }, [canvasBoxRef, ownRef]);
 
-        if (gpuContext) {
-          setContext(gpuContext);
-          configureContextPresentation(device, gpuContext);
-          setTextureFormat(getPreferredCanvasFormat());
-        } else {
-          throw new Error('Failed to request GPUCanvasContext');
-        }
+  useEffect(() => {
+    if (canvasBoxRef.current && ownRef.current) {
+      ownRef.current.width = canvasBoxRef.current.clientWidth;
+      ownRef.current.height = canvasBoxRef.current.clientHeight;
+    }
+
+    if (device && ownRef.current) {
+      const gpuContext = ownRef.current.getContext('webgpu');
+      if (gpuContext) {
+        setContext(gpuContext);
+        configureContextPresentation(device, gpuContext);
+        setTextureFormat(getPreferredCanvasFormat());
+      } else {
+        throw new Error('Failed to request GPUCanvasContext');
       }
     }
   }, []);
 
-  const [className, size] = useMemo(() => {
-    if (fullscreen) {
-      return [
-        `${styles.w_full} ${styles.h_full}`,
-        { width: undefined, height: undefined },
-      ];
-    } else {
-      return ['', { width, height }];
-    }
-  }, [fullscreen, width, height]);
-
-  console.log(size.width, size.height);
+  useEffect(() => {
+    window.addEventListener('resize', resizeCanvas);
+    return () => {
+      window.removeEventListener('resize', resizeCanvas);
+    };
+  }, []);
 
   return (
     <>
-      {canvas ? (
-        <WebGPUCanvasContext.Provider value={canvas}>
+      {ownRef.current ? (
+        <WebGPUCanvasContext.Provider value={ownRef.current}>
           {context && (
             <WebGPUContext.Provider value={context}>
               {textureFormat && (
@@ -102,13 +95,9 @@ const WGPUCanvas = forwardRef<
       ) : (
         <LoadingSpinner />
       )}
-      <canvas
-        ref={inner}
-        id="wgpu-canvas"
-        width={size.width}
-        height={size.height}
-        className={`${className} ${downscale ? styles.downscale ?? '' : ''}`}
-      ></canvas>
+      <div ref={canvasBoxRef} id="wgpu-box">
+        <canvas ref={inner} id="wgpu-canvas"></canvas>
+      </div>
     </>
   );
 });
