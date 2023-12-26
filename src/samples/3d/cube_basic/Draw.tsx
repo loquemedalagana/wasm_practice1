@@ -64,7 +64,7 @@ const Draw: React.FC = () => {
         label={'rotation'}
         handleInput={rotationVec3Control.handleChangeInput}
         step={rotationVec3Control.step}
-        disabled={[false, false, false]}
+        disabled={[true, true, false]}
       />
       <Vec3InputGroup
         v3={scaleVec3Control.v3}
