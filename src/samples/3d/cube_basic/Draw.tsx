@@ -1,3 +1,5 @@
+import { mat4 } from 'wgpu-matrix';
+
 import { useGPUDevice } from '@/wgpu/useWebGPUDevice';
 import { useWebGPUCanvas } from '@/wgpu/useWGPUCanvas';
 import { useTextureFormat } from '@/wgpu/useTextureFormat';
@@ -9,27 +11,34 @@ import CheckBox from '@/components/CheckBox/CheckBox';
 import StyledHr from '@/components/StyledHr/StyledHr';
 import CheckBoxGroup from '@/components/CheckBox/CheckBoxGroup';
 
-const Main: React.FC = () => {
+import { useModelViewProjectionContext } from '@/util/contexts/ModelViewProjectionContext';
+
+const Draw: React.FC = () => {
   const device = useGPUDevice();
   const canvas = useWebGPUCanvas();
   const context = useWebGPUContext();
   const textureFormat = useTextureFormat();
-
+  const modelViewProjectionContext = useModelViewProjectionContext();
   const {
+    modelMatrix,
+    viewProjectionMatrix,
     translationVec3Control,
-    rotationVec3Control,
     scaleVec3Control,
-    wireFrameActive,
-    handleWireFrame,
-  } = use3dBasicCube({
-    device,
-    context,
-    textureFormat,
-    canvas,
-  });
+    rotationVec3Control,
+  } = modelViewProjectionContext;
+
+  const { wireFrameActive, handleWireFrame } = use3dBasicCube(
+    {
+      device,
+      context,
+      textureFormat,
+      canvas,
+    },
+    mat4.multiply(modelMatrix, viewProjectionMatrix),
+  );
 
   return (
-    <div>
+    <>
       <CheckBoxGroup>
         <CheckBox
           name="wireframe"
@@ -66,8 +75,8 @@ const Main: React.FC = () => {
         step={scaleVec3Control.step}
         disabled={[false, false, true]}
       />
-    </div>
+    </>
   );
 };
 
-export default Main;
+export default Draw;

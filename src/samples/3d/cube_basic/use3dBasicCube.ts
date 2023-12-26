@@ -1,5 +1,5 @@
 import { ChangeEventHandler, useCallback, useEffect, useState } from 'react';
-import { mat4 } from 'wgpu-matrix';
+import { Vec4 } from 'wgpu-matrix';
 
 import { GPUDeviceInfo } from '@/util/types/wgpu';
 import WGPUBufferGroup from '@/util/classes/WGPUBufferGroup';
@@ -12,11 +12,11 @@ import vertexShader from '@/shaders/3d/vertices/cube.vert.wgsl';
 
 // @ts-ignore
 import fragmentShader from '@/shaders/3d/fragments/vertexPositionColor.frag.wgsl';
-import ModelViewProjection from '@/util/classes/ModelViewProjection';
-import useVec3Control from '@/util/hooks/useVec3Control';
-import Transform from '@/util/classes/Transform';
 
-const use3dBasicCube = (canvasInfo: GPUDeviceInfo) => {
+const use3dBasicCube = (
+  canvasInfo: GPUDeviceInfo,
+  modelViewProjectionMatrix: Vec4,
+) => {
   const { device, context, textureFormat, canvas } = canvasInfo;
   const [wireFrameActive, setWireFrameActive] = useState(false);
 
@@ -24,44 +24,16 @@ const use3dBasicCube = (canvasInfo: GPUDeviceInfo) => {
     setWireFrameActive(e.currentTarget.checked);
   };
 
-  const translationVec3Control = useVec3Control(
-    [0, 0, 0],
-    [-2, -2, -2],
-    [2, 2, 2],
-  );
-  const rotationVec3Control = useVec3Control(
-    [0, 0, 0],
-    [-Math.PI, -Math.PI, -Math.PI],
-    [Math.PI, Math.PI, Math.PI],
-  );
-  const scaleVec3Control = useVec3Control(
-    [1.0, 1.0, 1.0],
-    [0.1, 0.1, 0.1],
-    [2.0, 2.0, 2.0],
-  );
   const cubeMesh = new CubeMesh();
 
   const draw = useCallback(
     (
       device: GPUDevice,
-      verticesBuffer: WGPUBufferGroup,
+      vertexBuffer: GPUBuffer,
+      indexBuffer: GPUBuffer,
       pipeline: GPURenderPipeline,
     ) => {
-      const transform = new Transform(
-        translationVec3Control.v3,
-        rotationVec3Control.v3,
-        scaleVec3Control.v3,
-      );
-
-      const modelViewProjection = new ModelViewProjection(
-        canvas.width / canvas.height,
-      );
-
-      const modelViewProjectionMatrix = mat4.multiply(
-        transform.modelMatrix,
-        modelViewProjection.viewProjectionMatrix,
-      );
-
+      // constant buffer in direct X
       const uniformBuffer = device.createBuffer({
         size: (modelViewProjectionMatrix as Float32Array).byteLength,
         usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
@@ -115,16 +87,14 @@ const use3dBasicCube = (canvasInfo: GPUDeviceInfo) => {
       const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
 
       passEncoder.setPipeline(pipeline);
-      passEncoder.setVertexBuffer(0, verticesBuffer.buffers[0]);
-      passEncoder.setVertexBuffer(1, verticesBuffer.buffers[1]);
-
-      passEncoder.setIndexBuffer(verticesBuffer.buffers[2], 'uint32');
+      passEncoder.setVertexBuffer(0, vertexBuffer);
+      passEncoder.setIndexBuffer(indexBuffer, 'uint32');
       passEncoder.setBindGroup(0, bindGroup);
-      passEncoder.drawIndexed(cubeMesh.numberOfVertices);
+      passEncoder.drawIndexed(cubeMesh.indices.length);
       passEncoder.end();
       device.queue.submit([commandEncoder.finish()]);
     },
-    [scaleVec3Control.v3, translationVec3Control.v3, rotationVec3Control.v3],
+    [modelViewProjectionMatrix],
   );
 
   useEffect(() => {
@@ -135,17 +105,10 @@ const use3dBasicCube = (canvasInfo: GPUDeviceInfo) => {
     const verticesBuffer = new WGPUBufferGroup(device, [
       {
         label: 'vertex',
-        size: cubeMesh.positions.byteLength,
+        size: cubeMesh.vertices.byteLength,
         mappedAtCreation: true,
         usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
-        data: cubeMesh.positions,
-      },
-      {
-        label: 'color',
-        size: cubeMesh.colors.byteLength,
-        mappedAtCreation: true,
-        usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
-        data: cubeMesh.colors,
+        data: cubeMesh.vertices,
       },
       {
         label: 'index',
@@ -174,22 +137,17 @@ const use3dBasicCube = (canvasInfo: GPUDeviceInfo) => {
         entryPoint: 'main',
         buffers: [
           {
-            arrayStride: 12,
+            arrayStride: 24,
             attributes: [
               {
                 format: 'float32x3',
                 offset: 0,
-                shaderLocation: 0, // Position, see vertex shader
+                shaderLocation: 0,
               },
-            ] as Iterable<GPUVertexAttribute>,
-          },
-          {
-            arrayStride: 12,
-            attributes: [
               {
                 format: 'float32x3',
-                offset: 0,
-                shaderLocation: 1, // Position, see vertex shader
+                offset: 12,
+                shaderLocation: 1,
               },
             ] as Iterable<GPUVertexAttribute>,
           },
@@ -208,18 +166,15 @@ const use3dBasicCube = (canvasInfo: GPUDeviceInfo) => {
       },
     });
 
-    draw(device, verticesBuffer, pipeline);
-  }, [
-    wireFrameActive,
-    translationVec3Control.v3,
-    rotationVec3Control.v3,
-    scaleVec3Control.v3,
-  ]);
+    draw(
+      device,
+      verticesBuffer.buffers[0],
+      verticesBuffer.buffers[1],
+      pipeline,
+    );
+  }, [wireFrameActive, modelViewProjectionMatrix]);
 
   return {
-    translationVec3Control,
-    rotationVec3Control,
-    scaleVec3Control,
     wireFrameActive,
     handleWireFrame,
   };
