@@ -1,0 +1,17 @@
+.downscale {
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+#__next canvas {
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+.w_full {
+  width: 100%;
+}
+
+.h_full {
+  height: 100%;
+}

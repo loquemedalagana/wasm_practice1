@@ -41,7 +41,7 @@ export const initialViewProjectionInput: ViewProjectionInput = {
   aspectRatio: 1.0,
   viewEyePosition: [2, 2, 4],
   viewEyeDirection: [0, 0, 1],
-  viewUp: [0, -1, 0],
+  viewUp: [0, 1, 0],
   nearZ: 0.01,
   farZ: 100.0,
 };
