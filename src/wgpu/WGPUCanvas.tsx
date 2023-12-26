@@ -13,6 +13,7 @@ import { WebGPUCanvasContext } from '@/wgpu/useWGPUCanvas';
 import { WebGPUContext } from '@/wgpu/useWGPUContextContext';
 import { TextureFormatContext } from '@/wgpu/useTextureFormat';
 import { useGPUDevice } from '@/wgpu/useWebGPUDevice';
+import { AspectRatioContext } from '@/wgpu/useAspectRatio';
 
 function getPreferredCanvasFormat() {
   return navigator.gpu.getPreferredCanvasFormat();
@@ -44,20 +45,19 @@ const WGPUCanvas = forwardRef<
   const [textureFormat, setTextureFormat] = useState<GPUTextureFormat | null>(
     null,
   );
+  const [aspectRatio, setAspectRatio] = useState(0);
   const device = useGPUDevice();
 
   const resizeCanvas = useCallback(() => {
     if (canvasBoxRef.current && ownRef.current) {
       ownRef.current.width = canvasBoxRef.current.clientWidth;
       ownRef.current.height = canvasBoxRef.current.clientHeight;
+      setAspectRatio(ownRef.current.width / ownRef.current.height);
     }
   }, [canvasBoxRef, ownRef]);
 
   useEffect(() => {
-    if (canvasBoxRef.current && ownRef.current) {
-      ownRef.current.width = canvasBoxRef.current.clientWidth;
-      ownRef.current.height = canvasBoxRef.current.clientHeight;
-    }
+    resizeCanvas();
 
     if (device && ownRef.current) {
       const gpuContext = ownRef.current.getContext('webgpu');
@@ -82,15 +82,21 @@ const WGPUCanvas = forwardRef<
     <>
       {ownRef.current ? (
         <WebGPUCanvasContext.Provider value={ownRef.current}>
-          {context && (
-            <WebGPUContext.Provider value={context}>
-              {textureFormat && (
-                <TextureFormatContext.Provider value={textureFormat}>
-                  {children}
-                </TextureFormatContext.Provider>
-              )}
-            </WebGPUContext.Provider>
-          )}
+          <AspectRatioContext.Provider
+            value={{
+              aspectRatio,
+            }}
+          >
+            {context && (
+              <WebGPUContext.Provider value={context}>
+                {textureFormat && (
+                  <TextureFormatContext.Provider value={textureFormat}>
+                    {children}
+                  </TextureFormatContext.Provider>
+                )}
+              </WebGPUContext.Provider>
+            )}
+          </AspectRatioContext.Provider>
         </WebGPUCanvasContext.Provider>
       ) : (
         <LoadingSpinner />

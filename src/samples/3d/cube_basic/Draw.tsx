@@ -1,4 +1,4 @@
-import { mat4, Vec4 } from 'wgpu-matrix';
+import { mat4 } from 'wgpu-matrix';
 
 import { useGPUDevice } from '@/wgpu/useWebGPUDevice';
 import { useWebGPUCanvas } from '@/wgpu/useWGPUCanvas';
@@ -10,27 +10,22 @@ import use3dBasicCube from '@/samples/3d/cube_basic/use3dBasicCube';
 import CheckBox from '@/components/CheckBox/CheckBox';
 import StyledHr from '@/components/StyledHr/StyledHr';
 import CheckBoxGroup from '@/components/CheckBox/CheckBoxGroup';
-import { IVec3Control } from '@/util/hooks/useVec3Control';
 
-interface Props {
-  modelMatrix: Vec4;
-  viewProjectionMatrix: Vec4;
-  translationVec3Control: IVec3Control;
-  rotationVec3Control: IVec3Control;
-  scaleVec3Control: IVec3Control;
-}
+import { useModelViewProjectionContext } from '@/util/contexts/ModelViewProjectionContext';
 
-const Draw: React.FC<Props> = ({
-  modelMatrix,
-  viewProjectionMatrix,
-  translationVec3Control,
-  scaleVec3Control,
-  rotationVec3Control,
-}) => {
+const Draw: React.FC = () => {
   const device = useGPUDevice();
   const canvas = useWebGPUCanvas();
   const context = useWebGPUContext();
   const textureFormat = useTextureFormat();
+  const modelViewProjectionContext = useModelViewProjectionContext();
+  const {
+    modelMatrix,
+    viewProjectionMatrix,
+    translationVec3Control,
+    scaleVec3Control,
+    rotationVec3Control,
+  } = modelViewProjectionContext;
 
   const { wireFrameActive, handleWireFrame } = use3dBasicCube(
     {
@@ -43,7 +38,7 @@ const Draw: React.FC<Props> = ({
   );
 
   return (
-    <div>
+    <>
       <CheckBoxGroup>
         <CheckBox
           name="wireframe"
@@ -80,7 +75,7 @@ const Draw: React.FC<Props> = ({
         step={scaleVec3Control.step}
         disabled={[false, false, true]}
       />
-    </div>
+    </>
   );
 };
 
